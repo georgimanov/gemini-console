@@ -1,0 +1,46 @@
+import OpenAI from "openai";
+import type { ChatSession, LlmProvider } from "./types.js";
+
+const DEFAULT_MODEL = "gpt-4.1-mini";
+
+type Message = { role: "system" | "user" | "assistant"; content: string };
+
+/** OpenAI provider backed by the Chat Completions API, with session history kept in-process. */
+export function createOpenAiProvider(model = process.env.LLM_MODEL ?? DEFAULT_MODEL): LlmProvider {
+  const client = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
+
+  return {
+    createChatSession(systemInstruction?: string): ChatSession {
+      const history: Message[] = systemInstruction
+        ? [{ role: "system", content: systemInstruction }]
+        : [];
+
+      return {
+        async sendMessageStream(message: string) {
+          history.push({ role: "user", content: message });
+
+          const stream = await client.chat.completions.create({
+            model,
+            messages: history,
+            stream: true,
+          });
+
+          let assistantReply = "";
+
+          return {
+            async *[Symbol.asyncIterator]() {
+              for await (const part of stream) {
+                const text = part.choices[0]?.delta?.content ?? "";
+                if (text) {
+                  assistantReply += text;
+                  yield { text };
+                }
+              }
+              history.push({ role: "assistant", content: assistantReply });
+            },
+          };
+        },
+      };
+    },
+  };
+}
