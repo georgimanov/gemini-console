@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import type { ContextProvider } from "./types.js";
 
 /**
  * Resolves a persona's <referencedDocuments> entries into their file contents.
@@ -23,6 +24,14 @@ export async function loadReferencedContext(
   }
 
   return sections.join("\n\n");
+}
+
+/** Wraps loadReferencedContext as a ContextProvider, resolved once at persona-load time. */
+export function createFileContextProvider(documentPaths: string[], resourcesDir: string): ContextProvider {
+  return {
+    id: "referencedDocuments",
+    load: () => loadReferencedContext(documentPaths, resourcesDir),
+  };
 }
 
 /** Expands any "dir/*" entries against the filesystem; leaves literal paths untouched. */

@@ -1,13 +1,22 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
-import { loadReferencedContext } from "./context.js";
+import { createFileContextProvider } from "./context/fileContextProvider.js";
+import { createWeatherContextProvider } from "./context/weatherContextProvider.js";
+import type { ContextProvider } from "./context/types.js";
+import { loadProfile, type AthleteProfile } from "./profile.js";
 
 export interface Persona {
   id: string;
   title: string;
   context: string;
+  dynamicProviders: ContextProvider[];
 }
+
+/** Registry of <dynamicContext type="..."/> handlers, mirroring PROVIDER_FACTORIES in src/llm/index.ts. */
+const DYNAMIC_CONTEXT_FACTORIES: Record<string, (profile: AthleteProfile) => ContextProvider> = {
+  weather: createWeatherContextProvider,
+};
 
 /**
  * Canonical persona schema (enforced by buildPersonaContext):
@@ -35,6 +44,7 @@ export async function loadPersonas(
 ): Promise<Map<string, Persona>> {
   const personas = new Map<string, Persona>();
   const personasDir = path.join(resourcesDir, "personas");
+  const profile = await loadProfile(resourcesDir);
 
   const files = await fs.readdir(personasDir);
   for (const file of files) {
@@ -69,25 +79,50 @@ export async function loadPersonas(
     const referencedDocs: string[] = (persona.referencedDocuments?.[0]?.document ?? []).map(
       textOf
     );
-    const referencedContext = await loadReferencedContext(referencedDocs, resourcesDir);
+    const fileProvider = createFileContextProvider(referencedDocs, resourcesDir);
+    const referencedContext = await fileProvider.load();
     const fullContext = referencedContext
       ? `${context}\n\nReference Data:\n${referencedContext}`
       : context;
 
-    personas.set(id, { id, title, context: fullContext });
+    const dynamicProviders = parseDynamicContext(persona, file, profile);
+
+    personas.set(id, { id, title, context: fullContext, dynamicProviders });
   }
 
   return personas;
 }
 
+/** Parses zero or more <dynamicContext type="..."/> tags into ContextProviders via the registry above. */
+function parseDynamicContext(persona: any, file: string, profile: AthleteProfile): ContextProvider[] {
+  const entries: any[] = persona.dynamicContext ?? [];
+
+  return entries.map((entry) => {
+    const type: string | undefined = entry?.$?.type;
+    if (!type) {
+      throw new Error(`<dynamicContext> in "${file}" is missing a required "type" attribute.`);
+    }
+
+    const factory = DYNAMIC_CONTEXT_FACTORIES[type];
+    if (!factory) {
+      throw new Error(
+        `Unknown dynamicContext type "${type}" in "${file}". Supported: ${Object.keys(DYNAMIC_CONTEXT_FACTORIES).join(", ")}.`
+      );
+    }
+
+    return factory(profile);
+  });
+}
+
 /**
- * A persona's full system instruction, with a fresh temporal context line appended
- * so the model knows the current date/time (e.g. to give time-of-day-appropriate
- * suggestions). Call this at chat-session creation, not once at load time, so the
- * time doesn't go stale over a long-running process.
+ * A persona's full system instruction: static context, a fresh temporal context line,
+ * and any dynamic providers (e.g. weather) resolved fresh. Call this at chat-session
+ * creation, not once at load time, so time and dynamic context don't go stale over a
+ * long-running process.
  */
-export function buildSystemInstruction(persona: Persona): string {
-  return `${persona.context}\n\n${buildTemporalContext()}`;
+export async function buildSystemInstruction(persona: Persona): Promise<string> {
+  const dynamicSections = await Promise.all(persona.dynamicProviders.map((p) => p.load()));
+  return [persona.context, buildTemporalContext(), ...dynamicSections.filter(Boolean)].join("\n\n");
 }
 
 /** Flattens a parsed persona XML object into plain text for use as a system instruction. */
@@ -106,7 +141,7 @@ export function buildPersonaContext(persona: any, title: string): string {
     lines.push(`Mission: ${textOf(persona.mission[0])}`);
   }
 
-  const handled = new Set(["$", "identity", "mission"]);
+  const handled = new Set(["$", "identity", "mission", "dynamicContext"]);
   for (const [key, value] of Object.entries(persona)) {
     if (handled.has(key)) continue;
     lines.push("");

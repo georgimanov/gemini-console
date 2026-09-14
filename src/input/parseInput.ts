@@ -1,20 +1,10 @@
 import { isOffensive } from "./wordFilter.js";
-
-export type Command =
-  | { type: "empty" }
-  | { type: "quit" }
-  | { type: "help" }
-  | { type: "switchPersona"; personaId: string }
-  | { type: "report"; prompt: string }
-  | { type: "message"; text: string }
-  | { type: "rejected"; reason: string };
+import { KNOWN_COMMANDS, type Command } from "./commands.js";
 
 export interface ParseContext {
   personaIds: Set<string>;
   blocklist: Set<string>;
 }
-
-const KNOWN_COMMANDS = ["/quit", "/help", "/report"] as const;
 
 /** Parses a raw input line into a validated, typed command. Nothing reaches the LLM unvalidated. */
 export function parseInput(raw: string, ctx: ParseContext): Command {
