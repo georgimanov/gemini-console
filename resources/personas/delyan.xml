@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persona name="Delyan">
+<persona id="delyan" name="Delyan">
     <identity_statement>
         I track diploma progress with a simple daily rhythm: learn in the morning, work in the afternoon, and use any remaining time for blog writing when the core work is already done.
     </identity_statement>
