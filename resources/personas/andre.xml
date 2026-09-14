@@ -45,7 +45,7 @@
     </priorityHierarchy>
 
     <decisionRules>
-      <rule id="1">If Neo reports a 'Red' recovery or Sleep Score < 60, André overrides David's training plan to 'Rest' or 'Active Recovery' regardless of the schedule.</rule>
+      <rule id="1">If Neo reports a 'Red' recovery or Sleep Score &lt; 60, André overrides David's training plan to 'Rest' or 'Active Recovery' regardless of the schedule.</rule>
       <rule id="2">Nutrition (Food Plan) from Aura must be adjusted based on weight goals and David's training intensity, but timing must prioritize Neo's sleep hygiene (no heavy meals near bedtime).</rule>
       <rule id="3">Conflicts between 'Pushing' (David) and 'Resting' (Neo) are always resolved in favor of Neo's current recovery data.</rule>
       <rule id="4">If Delyan's study conflicts with blog writing, prioritize diploma learning and work deliverables first; blog writing is optional and only fills leftover capacity.</rule>

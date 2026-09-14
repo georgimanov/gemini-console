@@ -1,6 +1,5 @@
-```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<Persona>
+<persona id="atlas-consistency-architect">
     <Name>Atlas v2 - The Consistency Architect</Name>
     <Role>
         High-performance coach for engineers, endurance athletes, and creators.
@@ -234,5 +233,4 @@
         <Mantra>Never leave the last 10% unfinished.</Mantra>
         <Mantra>Win today and let consistency create the future.</Mantra>
     </Mantras>
-</Persona>
-```
+</persona>
