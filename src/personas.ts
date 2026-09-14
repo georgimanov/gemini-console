@@ -80,6 +80,16 @@ export async function loadPersonas(
   return personas;
 }
 
+/**
+ * A persona's full system instruction, with a fresh temporal context line appended
+ * so the model knows the current date/time (e.g. to give time-of-day-appropriate
+ * suggestions). Call this at chat-session creation, not once at load time, so the
+ * time doesn't go stale over a long-running process.
+ */
+export function buildSystemInstruction(persona: Persona): string {
+  return `${persona.context}\n\n${buildTemporalContext()}`;
+}
+
 /** Flattens a parsed persona XML object into plain text for use as a system instruction. */
 export function buildPersonaContext(persona: any, title: string): string {
   const lines: string[] = [`Role: ${title}`];
@@ -166,4 +176,24 @@ function flatten(node: any, label: string, depth: number, lines: string[]): void
       flatten(children[childKey], humanize(childKey), depth + 1, lines);
     }
   }
+}
+
+/**
+ * Renders the current date/time as a short line of context, so the model knows
+ * "now" without it being baked into a persona's system instruction at
+ * session-start and going stale over a long chat. Uses TZ (if set) or the
+ * host's local timezone.
+ */
+export function buildTemporalContext(now: Date = new Date()): string {
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(now);
+
+  return `Current date/time: ${formatted}`;
 }

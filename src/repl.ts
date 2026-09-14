@@ -1,8 +1,9 @@
 import * as readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import type { Persona } from "./personas.js";
+import { buildSystemInstruction, type Persona } from "./personas.js";
 import { createChatSession, withRetry, activeProviderName, type ChatSession } from "./llm/index.js";
 import { Defaults } from "./defaults.js";
+import { buildUserMessage } from "./userMessage.js";
 
 /** Starts the interactive console loop: persona switching, chat streaming, /quit. */
 export async function startRepl(personas: Map<string, Persona>): Promise<void> {
@@ -15,7 +16,7 @@ export async function startRepl(personas: Map<string, Persona>): Promise<void> {
 
   const defaultPersona = personas.get(Defaults.PERSONA_ID) ?? personas.values().next().value!;
   let currentPersona: Persona | null = defaultPersona;
-  let chat: ChatSession = createChatSession(defaultPersona.context);
+  let chat: ChatSession = createChatSession(buildSystemInstruction(defaultPersona));
 
   const rl = readline.createInterface({ input: stdin, output: stdout });
 
@@ -46,7 +47,7 @@ export async function startRepl(personas: Map<string, Persona>): Promise<void> {
       if (persona) {
         currentPersona = persona;
         console.log(`\n✓ Loaded persona: ${persona.title}\n`);
-        chat = createChatSession(persona.context);
+        chat = createChatSession(buildSystemInstruction(persona));
       } else {
         console.log(
           `\n✗ Persona not found: ${personaName}. Available: ${Array.from(personas.keys()).join(", ")}\n`
@@ -57,9 +58,7 @@ export async function startRepl(personas: Map<string, Persona>): Promise<void> {
       continue;
     }
 
-    const userMessage = currentPersona
-      ? `[Using persona: ${currentPersona.title}] ${message}`
-      : message;
+    const userMessage = buildUserMessage(message, currentPersona);
 
     try {
       const stream = await withRetry(() => chat.sendMessageStream(userMessage));
