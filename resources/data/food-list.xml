@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<food_list>
+    <category name="Fruits &amp; Vegetables">
+        <item name="Banana">
+            <nutrition_per_100g kcal="89" protein="1.1g" carbs="22.8g" fat="0.3g"/>
+        </item>
+        <item name="Apple">
+            <nutrition_per_100g kcal="52" protein="0.3g" carbs="13.8g" fat="0.2g"/>
+        </item>
+        <item name="Grapefruit">
+            <nutrition_per_100g kcal="42" protein="0.8g" carbs="10.7g" fat="0.1g"/>
+        </item>
+        <item name="Kiwis">
+            <nutrition_per_100g kcal="61" protein="1.1g" carbs="14.7g" fat="0.5g"/>
+        </item>
+        <item name="Lemons">
+            <nutrition_per_100g kcal="29" protein="1.1g" carbs="9.3g" fat="0.3g"/>
+        </item>
+        <item name="Red berries">
+            <nutrition_per_100g kcal="50" protein="1g" carbs="12g" fat="0.3g"/>
+        </item>
+        <item name="Medjool dates">
+            <nutrition_per_100g kcal="277" sugar="66g" fat="0.2g" sodium="0mg"/>
+        </item>
+        <item name="Tomatoes">
+            <nutrition_per_100g kcal="18" protein="0.9g" carbs="3.9g" fat="0.2g"/>
+        </item>
+        <item name="Cherry tomatoes">
+            <nutrition_per_100g kcal="18" protein="0.9g" carbs="3.9g" fat="0.2g"/>
+        </item>
+        <item name="Cucumber">
+            <nutrition_per_100g kcal="15" protein="0.7g" carbs="3.6g" fat="0.1g"/>
+        </item>
+        <item name="Carrots">
+            <nutrition_per_100g kcal="41" protein="0.9g" carbs="10g" fat="0.2g"/>
+        </item>
+        <item name="Bell pepper">
+            <nutrition_per_100g kcal="31" protein="1g" carbs="6g" fat="0.3g"/>
+        </item>
+        <item name="Spinach">
+            <nutrition_per_100g kcal="23" protein="2.9g" carbs="3.6g" fat="0.4g"/>
+        </item>
+        <item name="Beet root">
+            <nutrition_per_100g kcal="43" protein="1.6g" carbs="10g" fat="0.2g"/>
+        </item>
+        <item name="Avocado">
+            <nutrition_per_100g kcal="160" protein="2g" carbs="9g" fat="15g"/>
+        </item>
+    </category>
+
+    <category name="Proteins (Meat &amp; Eggs)">
+        <item name="Chicken breast">
+            <nutrition_per_100g kcal="165" protein="31g" fat="3.6g" carbs="0g"/>
+        </item>
+        <item name="Minced meat">
+            <nutrition_per_100g kcal="250" protein="18g" fat="20g" carbs="0g"/>
+        </item>
+        <item name="Sliced lean meat">
+            <nutrition_per_100g kcal="120" protein="22g" fat="3g" carbs="0g"/>
+        </item>
+        <item name="Eggs">
+            <nutrition_per_100g kcal="155" protein="13g" fat="11g" carbs="1.1g"/>
+        </item>
+        <item name="Salmon">
+            <nutrition_per_100g kcal="208" protein="20g" fat="13g" carbs="0g"/>
+        </item>
+        <item name="Canned tuna">
+            <nutrition_per_100g kcal="116" protein="26g" fat="1g" carbs="0g"/>
+        </item>
+    </category>
+
+    <category name="Dairy">
+        <item name="Skyr">
+            <nutrition_per_100g kcal="60" protein="11g" carbs="4g" fat="0.2g"/>
+        </item>
+        <item name="Quark">
+            <nutrition_per_100g kcal="68" protein="12g" carbs="4g" fat="0.2g"/>
+        </item>
+        <item name="Cottage cheese">
+            <nutrition_per_100g kcal="98" protein="11g" carbs="3.4g" fat="4.3g"/>
+        </item>
+        <item name="Whole milk">
+            <nutrition_per_100g kcal="61" protein="3.1g" carbs="4.8g" fat="3.3g"/>
+        </item>
+    </category>
+
+    <category name="Grains &amp; Starches">
+        <item name="Rice">
+            <nutrition_per_100g kcal="360" protein="7g" carbs="79g" fat="1g"/>
+        </item>
+        <item name="Quinoa">
+            <nutrition_per_100g kcal="368" protein="14g" carbs="64g" fat="6g"/>
+        </item>
+        <item name="Bulgur">
+            <nutrition_per_100g kcal="342" protein="12g" carbs="76g" fat="1.3g"/>
+        </item>
+        <item name="Couscous">
+            <nutrition_per_100g kcal="376" protein="13g" carbs="77g" fat="0.6g"/>
+        </item>
+        <item name="Oats">
+            <nutrition_per_100g kcal="389" protein="17g" carbs="66g" fat="7g"/>
+        </item>
+        <item name="Pasta">
+            <nutrition_per_100g kcal="370" protein="13g" carbs="75g" fat="1.5g"/>
+        </item>
+        <item name="Protein bread">
+            <nutrition_per_100g kcal="217" protein="20g" carbohydrates="32g" sugar="4.3g" fat="3.3g" fiber="6.5g" salt="1.2g"/>
+        </item>
+        <item name="Potatoes">
+            <nutrition_per_100g kcal="77" protein="2g" carbs="17g" fat="0.1g"/>
+        </item>
+        <item name="Sweet potato">
+            <nutrition_per_100g kcal="86" protein="1.6g" carbs="20g" fat="0.1g"/>
+        </item>
+    </category>
+
+    <category name="Fats, Seeds &amp; Sweeteners">
+        <item name="Tahini">
+            <nutrition_per_100g kcal="595" protein="17g" carbs="18g" fat="53g"/>
+        </item>
+        <item name="Coconut butter">
+            <nutrition_per_100g kcal="630" protein="3g" carbs="17g" fat="65g"/>
+        </item>
+        <item name="Olives">
+            <nutrition_per_100g kcal="115" protein="0.8g" carbs="6g" fat="11g"/>
+        </item>
+        <item name="Roasted almonds">
+            <nutrition_per_100g kcal="579" protein="21g" carbs="22g" fat="49g"/>
+        </item>
+        <item name="Dried grapes (Raisins)">
+            <nutrition_per_100g kcal="299" protein="3.3g" carbs="79g" fat="0.5g"/>
+        </item>
+        <item name="Honey">
+            <nutrition_per_100g kcal="304" protein="0.3g" carbs="82g" fat="0g"/>
+        </item>
+        <item name="Maple syrup">
+            <nutrition_per_100g kcal="260" protein="0g" carbs="67g" fat="0g"/>
+        </item>
+        <item name="Carob powder">
+            <nutrition_per_100g kcal="222" protein="4.6g" carbs="89g" fat="0.7g"/>
+        </item>
+    </category>
+
+    <category name="Canned &amp; Legumes">
+        <item name="Beans (white and red)">
+            <nutrition_per_100g kcal="347" protein="21g" carbs="63g" fat="1.2g"/>
+        </item>
+        <item name="Peas">
+            <nutrition_per_100g kcal="81" protein="5.4g" carbs="14g" fat="0.4g"/>
+        </item>
+        <item name="Dried tomatoes">
+            <nutrition_per_100g kcal="258" protein="14g" carbs="56g" fat="3g"/>
+        </item>
+        <item name="Pasta bolognese sauce">
+            <nutrition_per_100g kcal="90" protein="4g" carbs="6g" fat="6g"/>
+        </item>
+    </category>
+</food_list>
