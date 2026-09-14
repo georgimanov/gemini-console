@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
+import { loadReferencedContext } from "./context.js";
 
 export interface Persona {
   id: string;
@@ -24,11 +25,16 @@ export interface Persona {
  * whatever structure it needs without the parser silently dropping it.
  */
 
-/** Loads every persona XML file in resources/personas into a map keyed by persona id. */
+/**
+ * Loads every persona XML file in resources/personas into a map keyed by persona id,
+ * merging in the content of each persona's <referencedDocuments> (resolved relative
+ * to resourcesDir) so the model has the actual data, not just filenames.
+ */
 export async function loadPersonas(
-  personasDir: string
+  resourcesDir: string
 ): Promise<Map<string, Persona>> {
   const personas = new Map<string, Persona>();
+  const personasDir = path.join(resourcesDir, "personas");
 
   const files = await fs.readdir(personasDir);
   for (const file of files) {
@@ -60,7 +66,15 @@ export async function loadPersonas(
     }
 
     const context = buildPersonaContext(persona, title);
-    personas.set(id, { id, title, context });
+    const referencedDocs: string[] = (persona.referencedDocuments?.[0]?.document ?? []).map(
+      textOf
+    );
+    const referencedContext = await loadReferencedContext(referencedDocs, resourcesDir);
+    const fullContext = referencedContext
+      ? `${context}\n\nReference Data:\n${referencedContext}`
+      : context;
+
+    personas.set(id, { id, title, context: fullContext });
   }
 
   return personas;

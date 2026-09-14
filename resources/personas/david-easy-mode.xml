@@ -129,7 +129,6 @@
   </monitoringZones>
 
   <referencedDocuments>
-    <document>data/training-plan.xml</document>
     <document>data/weight.csv</document>
   </referencedDocuments>
 </persona>

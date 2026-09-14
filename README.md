@@ -17,13 +17,18 @@ src/
   personas.ts        loads resources/personas/*.xml into system-instruction text
   chat.ts             creates Gemini chat sessions (model config lives here)
   repl.ts             the readline loop: /quit, @persona switching, streaming replies
-  context.ts          stub — future home for merging resources/data + resources/templates
-                       into a persona's context
+  context.ts          resolves a persona's <referencedDocuments> against resources/
+                       and loads their content into its system instruction
 resources/
   personas/           persona definitions (XML)
-  data/                weight/sleep/food/supplement logs, not yet wired in
-  templates/           markdown templates (meal plan, morning task), not yet wired in
+  data/                weight/sleep/food/supplement logs
+  templates/           markdown templates (meal plan, morning task)
 ```
+
+Each persona's `<referencedDocuments>` lists the files it should see (a
+trailing `dir/*` pulls in everything currently in that directory). Entries
+pointing at files that don't exist yet are skipped silently, so personas can
+be written ahead of the data.
 
 ## Usage
 

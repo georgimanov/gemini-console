@@ -35,7 +35,7 @@
   </monitoringZones>
 
   <referencedDocuments>
-    <document>templates/meal_plan_template.xml</document>
+    <document>templates/meal_plan_template.md</document>
     <document>data/food-list.xml</document>
     <document>data/supplements-and-vitamins.xml</document>
     <document>data/sleep.csv</document>

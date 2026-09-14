@@ -311,6 +311,5 @@
 
   <referencedDocuments>
     <document>data/*</document>
-    <document>todays-plan/*</document>
   </referencedDocuments>
 </persona>

@@ -45,10 +45,7 @@
 
   <referencedDocuments>
     <document>data/*</document>
-    <document>data/morning_task_template.md</document>
+    <document>templates/morning_task_template.md</document>
     <document>personas/atlas.xml</document>
-    <document>todays-plan/*</document>
-    <document>archives/briefs/*</document>
-    <document>archives/meal-plans/*</document>
   </referencedDocuments>
 </persona>
