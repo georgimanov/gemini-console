@@ -1,0 +1,6 @@
+# One blocked word or phrase per line, case-insensitive, whole-word matched.
+# Lines starting with # and blank lines are ignored.
+damn
+hell
+stupid
+idiot

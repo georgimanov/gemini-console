@@ -4,9 +4,10 @@ import { buildSystemInstruction, type Persona } from "./personas.js";
 import { createChatSession, withRetry, activeProviderName, type ChatSession } from "./llm/index.js";
 import { Defaults } from "./defaults.js";
 import { buildUserMessage } from "./userMessage.js";
+import { parseInput, type ParseContext } from "./input.js";
 
 /** Starts the interactive console loop: persona switching, chat streaming, /quit. */
-export async function startRepl(personas: Map<string, Persona>): Promise<void> {
+export async function startRepl(personas: Map<string, Persona>, blocklist: Set<string>): Promise<void> {
   if (personas.size === 0) {
     console.log(
       "No personas found. Add a persona XML file to resources/personas before starting the console."
@@ -19,8 +20,9 @@ export async function startRepl(personas: Map<string, Persona>): Promise<void> {
   let chat: ChatSession = createChatSession(buildSystemInstruction(defaultPersona));
 
   const rl = readline.createInterface({ input: stdin, output: stdout });
+  const ctx: ParseContext = { personaIds: new Set(personas.keys()), blocklist };
 
-  console.log("AI coach console — type a message, or /quit to exit.");
+  console.log("AI coach console — type a message, or /quit to exit. Type /help for commands.");
   console.log(`Available personas: ${Array.from(personas.keys()).join(", ")}`);
   console.log(`Default persona: ${currentPersona.title}`);
   console.log("Type @persona-name to load a persona.\n");
@@ -28,52 +30,59 @@ export async function startRepl(personas: Map<string, Persona>): Promise<void> {
   rl.setPrompt("you> ");
   rl.prompt();
 
-  for await (const message of rl) {
-    const trimmed = message.trim();
+  outer: for await (const line of rl) {
+    const command = parseInput(line, ctx);
 
-    if (trimmed === "/quit") {
-      break;
-    }
+    switch (command.type) {
+      case "empty":
+        rl.prompt();
+        continue outer;
 
-    if (trimmed === "") {
-      rl.prompt();
-      continue;
-    }
+      case "quit":
+        break outer;
 
-    if (trimmed.startsWith("@")) {
-      const personaName = trimmed.slice(1).toLowerCase();
-      const persona = personas.get(personaName);
-
-      if (persona) {
-        currentPersona = persona;
-        console.log(`\n✓ Loaded persona: ${persona.title}\n`);
-        chat = createChatSession(buildSystemInstruction(persona));
-      } else {
+      case "help":
         console.log(
-          `\n✗ Persona not found: ${personaName}. Available: ${Array.from(personas.keys()).join(", ")}\n`
+          `\nCommands: /quit, /help, /report <topic>, @persona-name\nPersonas: ${Array.from(personas.keys()).join(", ")}\n`
         );
+        rl.prompt();
+        continue outer;
+
+      case "rejected":
+        console.log(`\n✗ ${command.reason}\n`);
+        rl.prompt();
+        continue outer;
+
+      case "switchPersona": {
+        currentPersona = personas.get(command.personaId)!;
+        console.log(`\n✓ Loaded persona: ${currentPersona.title}\n`);
+        chat = createChatSession(buildSystemInstruction(currentPersona));
+        rl.prompt();
+        continue outer;
       }
 
-      rl.prompt();
-      continue;
-    }
+      case "report":
+      case "message": {
+        const text = command.type === "report" ? command.prompt : command.text;
+        const userMessage = buildUserMessage(text, currentPersona);
 
-    const userMessage = buildUserMessage(message, currentPersona);
+        try {
+          const stream = await withRetry(() => chat.sendMessageStream(userMessage));
 
-    try {
-      const stream = await withRetry(() => chat.sendMessageStream(userMessage));
+          stdout.write(`${activeProviderName}:${currentPersona?.title ?? "no persona"} > `);
+          for await (const chunk of stream) {
+            stdout.write(chunk.text ?? "");
+          }
+          stdout.write("\n\n");
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          console.log(`\n✗ Request failed: ${reason}\n`);
+        }
 
-      stdout.write(`${activeProviderName}:${currentPersona?.title ?? "no persona"} > `);
-      for await (const chunk of stream) {
-        stdout.write(chunk.text ?? "");
+        rl.prompt();
+        continue outer;
       }
-      stdout.write("\n\n");
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-      console.log(`\n✗ Request failed: ${reason}\n`);
     }
-
-    rl.prompt();
   }
 
   rl.close();
