@@ -1,10 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
+import { Defaults } from "../defaults.js";
 import type { ChatSession, LlmProvider } from "./types.js";
 
-const DEFAULT_MODEL = "gemini-3.5-flash-lite";
-
 /** Gemini provider backed by @google/genai. */
-export function createGeminiProvider(model = process.env.LLM_MODEL ?? DEFAULT_MODEL): LlmProvider {
+export function createGeminiProvider(
+  model = process.env.LLM_MODEL ?? Defaults.MODEL.gemini
+): LlmProvider {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   return {

@@ -1,12 +1,13 @@
 import OpenAI from "openai";
+import { Defaults } from "../defaults.js";
 import type { ChatSession, LlmProvider } from "./types.js";
-
-const DEFAULT_MODEL = "gpt-4.1-mini";
 
 type Message = { role: "system" | "user" | "assistant"; content: string };
 
 /** OpenAI provider backed by the Chat Completions API, with session history kept in-process. */
-export function createOpenAiProvider(model = process.env.LLM_MODEL ?? DEFAULT_MODEL): LlmProvider {
+export function createOpenAiProvider(
+  model = process.env.LLM_MODEL ?? Defaults.MODEL.openai
+): LlmProvider {
   const client = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
 
   return {

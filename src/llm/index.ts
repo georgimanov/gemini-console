@@ -1,3 +1,4 @@
+import { Defaults } from "../defaults.js";
 import type { ChatSession, LlmProvider, ProviderName } from "./types.js";
 import { createGeminiProvider } from "./gemini.js";
 import { createOpenAiProvider } from "./openai.js";
@@ -13,7 +14,7 @@ const PROVIDER_FACTORIES: Record<ProviderName, () => LlmProvider> = {
 };
 
 function resolveProviderName(): ProviderName {
-  const raw = (process.env.LLM_PROVIDER ?? "gemini").toLowerCase();
+  const raw = (process.env.LLM_PROVIDER ?? Defaults.PROVIDER).toLowerCase();
   if (raw in PROVIDER_FACTORIES) return raw as ProviderName;
 
   throw new Error(
