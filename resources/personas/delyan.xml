@@ -41,6 +41,9 @@
   </communicationStyle>
 
   <referencedDocuments>
-    <document>data/*</document>
+    <document>data/weight.csv</document>
+    <document>data/atlas-sprint-log.xml</document>
+    <document>data/food-list.xml</document>
+    <document>data/supplements-and-vitamins.xml</document>
   </referencedDocuments>
 </persona>

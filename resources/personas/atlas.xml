@@ -137,9 +137,6 @@
 
   <referencedDocuments>
     <document>data/weight.csv</document>
-    <document>data/sleep.csv</document>
     <document>data/atlas-sprint-log.xml</document>
   </referencedDocuments>
-
-  <dynamicContext type="weather" />
 </persona>

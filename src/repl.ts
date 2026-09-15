@@ -2,6 +2,7 @@ import * as readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { buildSystemInstruction, type Persona } from "./personas/index.js";
 import { createChatSession, withRetry, activeProviderName, type ChatSession } from "./llm/index.js";
+import type { Tool } from "./tools/types.js";
 import { Defaults } from "./defaults.js";
 import { buildUserMessage } from "./userMessage.js";
 import { parseInput, type ParseContext } from "./input/index.js";
@@ -13,7 +14,8 @@ import { createMailSink } from "./output/mailSink.js";
 export async function startRepl(
   personas: Map<string, Persona>,
   blocklist: Set<string>,
-  reportsDir: string
+  reportsDir: string,
+  tools: Tool[]
 ): Promise<void> {
   if (personas.size === 0) {
     console.log(
@@ -24,7 +26,7 @@ export async function startRepl(
 
   const defaultPersona = personas.get(Defaults.PERSONA_ID) ?? personas.values().next().value!;
   let currentPersona: Persona | null = defaultPersona;
-  let chat: ChatSession = createChatSession(await buildSystemInstruction(defaultPersona));
+  let chat: ChatSession = createChatSession(buildSystemInstruction(defaultPersona), tools);
 
   const rl = readline.createInterface({ input: stdin, output: stdout });
   const ctx: ParseContext = { personaIds: new Set(personas.keys()), blocklist };
@@ -63,7 +65,7 @@ export async function startRepl(
       case "switchPersona": {
         currentPersona = personas.get(command.personaId)!;
         console.log(`\n✓ Loaded persona: ${currentPersona.title}\n`);
-        chat = createChatSession(await buildSystemInstruction(currentPersona));
+        chat = createChatSession(buildSystemInstruction(currentPersona), tools);
         rl.prompt();
         continue outer;
       }

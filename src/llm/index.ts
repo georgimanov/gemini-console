@@ -1,4 +1,5 @@
 import { Defaults } from "../defaults.js";
+import type { Tool } from "../tools/types.js";
 import type { ChatSession, LlmProvider, ProviderName } from "./types.js";
 import { createGeminiProvider } from "./gemini.js";
 import { createOpenAiProvider } from "./openai.js";
@@ -28,7 +29,7 @@ export const activeProviderName: ProviderName = resolveProviderName();
 /** The active provider, selected once at startup via the LLM_PROVIDER env var (default "gemini"). */
 export const activeProvider: LlmProvider = PROVIDER_FACTORIES[activeProviderName]();
 
-/** Creates a new chat session on the active provider, optionally scoped to a persona's system instruction. */
-export function createChatSession(systemInstruction?: string): ChatSession {
-  return activeProvider.createChatSession(systemInstruction);
+/** Creates a new chat session on the active provider, optionally scoped to a persona's system instruction and tools. */
+export function createChatSession(systemInstruction?: string, tools?: Tool[]): ChatSession {
+  return activeProvider.createChatSession(systemInstruction, tools);
 }

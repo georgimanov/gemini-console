@@ -2,9 +2,6 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
 import { createFileContextProvider } from "../context/fileContextProvider.js";
-import { resolveDynamicContext } from "../context/registry.js";
-import type { ContextProvider } from "../context/types.js";
-import { loadProfile, type AthleteProfile } from "../profile.js";
 import { textOf } from "../xml.js";
 import { buildPersonaContext } from "./render.js";
 import type { Persona } from "./types.js";
@@ -18,7 +15,6 @@ import type { Persona } from "./types.js";
 export async function loadPersonas(resourcesDir: string): Promise<Map<string, Persona>> {
   const personas = new Map<string, Persona>();
   const personasDir = path.join(resourcesDir, "personas");
-  const profile = await loadProfile(resourcesDir);
 
   const files = await fs.readdir(personasDir);
   for (const file of files) {
@@ -59,29 +55,8 @@ export async function loadPersonas(resourcesDir: string): Promise<Map<string, Pe
       ? `${context}\n\nReference Data:\n${referencedContext}`
       : context;
 
-    const dynamicProviders = parseDynamicContext(persona, file, profile);
-
-    personas.set(id, { id, title, context: fullContext, dynamicProviders });
+    personas.set(id, { id, title, context: fullContext });
   }
 
   return personas;
-}
-
-/** Parses zero or more <dynamicContext type="..."/> tags into ContextProviders via the context registry. */
-function parseDynamicContext(persona: any, file: string, profile: AthleteProfile): ContextProvider[] {
-  const entries: any[] = persona.dynamicContext ?? [];
-
-  return entries.map((entry) => {
-    const type: string | undefined = entry?.$?.type;
-    if (!type) {
-      throw new Error(`<dynamicContext> in "${file}" is missing a required "type" attribute.`);
-    }
-
-    try {
-      return resolveDynamicContext(type, profile);
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-      throw new Error(`${reason} (declared in "${file}")`);
-    }
-  });
 }

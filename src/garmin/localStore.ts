@@ -76,3 +76,19 @@ export async function hasSleepData(dataDir: string, date: string): Promise<boole
   const record = await readMetricCategory(dataDir, "sleep", date);
   return record.metrics.sleep_duration !== undefined;
 }
+
+/** Reads one category's records across a set of dates, dropping days with no data. */
+export async function readMetricsRange(
+  dataDir: string,
+  category: Category,
+  dates: string[]
+): Promise<MetricCategoryRecord[]> {
+  const records = await Promise.all(dates.map((date) => readMetricCategory(dataDir, category, date)));
+  return records.filter((record) => Object.keys(record.metrics).length > 0);
+}
+
+/** Reads workouts across a set of dates, dropping days with no activities. */
+export async function readWorkoutsRange(dataDir: string, dates: string[]): Promise<WorkoutsRecord[]> {
+  const records = await Promise.all(dates.map((date) => readWorkouts(dataDir, date)));
+  return records.filter((record) => Object.keys(record.activities).length > 0);
+}

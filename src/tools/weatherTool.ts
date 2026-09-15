@@ -1,5 +1,5 @@
 import type { AthleteProfile } from "../profile.js";
-import type { ContextProvider } from "./types.js";
+import type { Tool } from "./types.js";
 
 interface Coords {
   lat: number;
@@ -7,23 +7,26 @@ interface Coords {
 }
 
 /** Fetches current weather for the athlete's profile location via Open-Meteo (free, no API key). */
-export function createWeatherContextProvider(profile: AthleteProfile): ContextProvider {
+export function createWeatherTool(profile: AthleteProfile): Tool {
   let coords: Coords | null = null;
 
   return {
-    id: "weather",
-    async load() {
-      if (!profile.location) return "";
+    name: "get_current_weather",
+    description:
+      "Returns current weather conditions (temperature, conditions, wind) at the athlete's home location. " +
+      "Call this when reasoning about outdoor training plans.",
+    parameters: { type: "object", properties: {} },
+    async execute() {
+      if (!profile.location) return "No location is set in the athlete's profile.";
 
       try {
         coords ??= await geocode(profile.location);
-        if (!coords) return "";
+        if (!coords) return `Could not resolve location "${profile.location}".`;
 
         const current = await fetchCurrentWeather(coords);
-        return `Current Weather (${profile.location}): ${current.temperature}°C, ${describeWeatherCode(current.weatherCode)}, wind ${current.windSpeed} km/h`;
+        return `Current weather (${profile.location}): ${current.temperature}°C, ${describeWeatherCode(current.weatherCode)}, wind ${current.windSpeed} km/h`;
       } catch {
-        // Never break session creation over a flaky external API.
-        return "";
+        return "Weather data is temporarily unavailable.";
       }
     },
   };

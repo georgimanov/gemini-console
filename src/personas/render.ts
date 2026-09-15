@@ -32,7 +32,7 @@ export function buildPersonaContext(persona: any, title: string): string {
     lines.push(`Mission: ${textOf(persona.mission[0])}`);
   }
 
-  const handled = new Set(["$", "identity", "mission", "dynamicContext"]);
+  const handled = new Set(["$", "identity", "mission"]);
   for (const [key, value] of Object.entries(persona)) {
     if (handled.has(key)) continue;
     lines.push("");

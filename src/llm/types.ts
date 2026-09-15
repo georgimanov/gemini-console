@@ -1,3 +1,5 @@
+import type { Tool } from "../tools/types.js";
+
 /** One streamed piece of a model's reply. */
 export interface ChatChunk {
   text: string;
@@ -10,7 +12,7 @@ export interface ChatSession {
 
 /** A backend capable of starting chat sessions (Gemini, OpenAI, local...). */
 export interface LlmProvider {
-  createChatSession(systemInstruction?: string): ChatSession;
+  createChatSession(systemInstruction?: string, tools?: Tool[]): ChatSession;
 }
 
 export type ProviderName = "gemini" | "openai" | "ollama";
