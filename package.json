@@ -9,10 +9,12 @@
   "scripts": {
     "start": "tsx --env-file=.env index.ts",
     "dev": "tsx watch --env-file=.env index.ts",
+    "sync:garmin": "tsx --env-file=.env src/garmin/cli.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",
+    "garmin-connect": "^1.6.1",
     "openai": "^7.15.0",
     "xml2js": "^0.6.2"
   },
