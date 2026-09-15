@@ -10,15 +10,18 @@
     "start": "tsx --env-file=.env index.ts",
     "dev": "tsx watch --env-file=.env index.ts",
     "sync:garmin": "tsx --env-file=.env src/garmin/cli.ts",
+    "send:mail": "tsx --env-file=.env src/mail/cli.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",
     "garmin-connect": "^1.6.1",
+    "nodemailer": "^10.0.10",
     "openai": "^7.15.0",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
+    "@types/nodemailer": "^8.0.1",
     "@types/xml2js": "^0.4.14",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"

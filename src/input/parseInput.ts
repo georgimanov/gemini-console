@@ -1,6 +1,8 @@
 import { isOffensive } from "./wordFilter.js";
 import { KNOWN_COMMANDS, type Command } from "./commands.js";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export interface ParseContext {
   personaIds: Set<string>;
   blocklist: Set<string>;
@@ -39,6 +41,17 @@ export function parseInput(raw: string, ctx: ParseContext): Command {
       return { type: "rejected", reason: "Usage: /report <what to report on>" };
     }
     return { type: "report", prompt };
+  }
+
+  if (trimmed.startsWith("/mail")) {
+    const rest = trimmed.slice("/mail".length).trim();
+    const spaceIdx = rest.indexOf(" ");
+    const to = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
+    const prompt = spaceIdx === -1 ? "" : rest.slice(spaceIdx + 1).trim();
+    if (!to || !EMAIL_RE.test(to) || !prompt) {
+      return { type: "rejected", reason: "Usage: /mail <email> <what to report on>" };
+    }
+    return { type: "mail", to, prompt };
   }
 
   if (trimmed.startsWith("/")) {

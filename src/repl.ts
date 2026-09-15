@@ -7,6 +7,7 @@ import { buildUserMessage } from "./userMessage.js";
 import { parseInput, type ParseContext } from "./input/index.js";
 import { streamToConsole } from "./output/consoleSink.js";
 import { createReportSink } from "./output/reportSink.js";
+import { createMailSink } from "./output/mailSink.js";
 
 /** Starts the interactive console loop: persona switching, chat streaming, /quit. */
 export async function startRepl(
@@ -49,7 +50,7 @@ export async function startRepl(
 
       case "help":
         console.log(
-          `\nCommands: /quit, /help, /report <topic>, @persona-name\nPersonas: ${Array.from(personas.keys()).join(", ")}\n`
+          `\nCommands: /quit, /help, /report <topic>, /mail <email> <topic>, @persona-name\nPersonas: ${Array.from(personas.keys()).join(", ")}\n`
         );
         rl.prompt();
         continue outer;
@@ -68,10 +69,16 @@ export async function startRepl(
       }
 
       case "report":
+      case "mail":
       case "message": {
-        const text = command.type === "report" ? command.prompt : command.text;
+        const text = command.type === "message" ? command.text : command.prompt;
         const userMessage = buildUserMessage(text, currentPersona);
-        const sink = command.type === "report" ? createReportSink(reportsDir) : streamToConsole;
+        const sink =
+          command.type === "report"
+            ? createReportSink(reportsDir)
+            : command.type === "mail"
+              ? createMailSink(command.to)
+              : streamToConsole;
 
         try {
           const stream = await withRetry(() => chat.sendMessageStream(userMessage));
