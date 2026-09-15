@@ -48,4 +48,6 @@
     <document>templates/morning_task_template.md</document>
     <document>personas/atlas.xml</document>
   </referencedDocuments>
+
+  <dynamicContext type="weather" />
 </persona>

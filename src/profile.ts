@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
+import { textOf } from "./xml.js";
 
 /** The athlete's profile, used to personalize dynamic context providers (e.g. weather). */
 export interface AthleteProfile {
@@ -22,11 +23,4 @@ export async function loadProfile(resourcesDir: string): Promise<AthleteProfile>
   const location = textOf(parsed.profile?.location?.[0]);
 
   return { location };
-}
-
-/** Extracts the text content of an xml2js node, whether it parsed as a bare string or {_, $}. */
-function textOf(node: any): string {
-  if (node === undefined) return "";
-  const text = typeof node === "string" ? node : node?._ ?? "";
-  return String(text).trim();
 }

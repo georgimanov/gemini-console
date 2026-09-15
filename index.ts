@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { loadPersonas } from "./src/personas.js";
+import { loadPersonas } from "./src/personas/index.js";
 import { loadBlocklist } from "./src/input/index.js";
 import { startRepl } from "./src/repl.js";
 

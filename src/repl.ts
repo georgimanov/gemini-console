@@ -1,6 +1,6 @@
 import * as readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { buildSystemInstruction, type Persona } from "./personas.js";
+import { buildSystemInstruction, type Persona } from "./personas/index.js";
 import { createChatSession, withRetry, activeProviderName, type ChatSession } from "./llm/index.js";
 import { Defaults } from "./defaults.js";
 import { buildUserMessage } from "./userMessage.js";
