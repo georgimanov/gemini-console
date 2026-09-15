@@ -2,6 +2,7 @@ import * as readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { buildSystemInstruction, type Persona } from "../domain/personas/index.js";
 import { createChatSession, withRetry, activeProviderName, type ChatSession } from "../integrations/llm/index.js";
+import type { PersonaState } from "../domain/tools/registry.js";
 import type { Tool } from "../domain/tools/types.js";
 import { Defaults } from "./defaults.js";
 import { buildUserMessage } from "./userMessage.js";
@@ -15,7 +16,8 @@ export async function startRepl(
   personas: Map<string, Persona>,
   blocklist: Set<string>,
   reportsDir: string,
-  tools: Tool[]
+  tools: Tool[],
+  personaState: PersonaState
 ): Promise<void> {
   if (personas.size === 0) {
     console.log(
@@ -26,6 +28,7 @@ export async function startRepl(
 
   const defaultPersona = personas.get(Defaults.PERSONA_ID) ?? personas.values().next().value!;
   let currentPersona: Persona | null = defaultPersona;
+  personaState.id = defaultPersona.id;
   let chat: ChatSession = createChatSession(buildSystemInstruction(defaultPersona), tools);
 
   const rl = readline.createInterface({ input: stdin, output: stdout });
@@ -64,6 +67,7 @@ export async function startRepl(
 
       case "switchPersona": {
         currentPersona = personas.get(command.personaId)!;
+        personaState.id = currentPersona.id;
         console.log(`\n✓ Loaded persona: ${currentPersona.title}\n`);
         chat = createChatSession(buildSystemInstruction(currentPersona), tools);
         rl.prompt();

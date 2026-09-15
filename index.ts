@@ -8,10 +8,12 @@ import { startRepl } from "./src/app/repl.js";
 const resourcesDir = path.join(import.meta.dirname, "resources");
 const reportsDir = path.join(import.meta.dirname, "reports");
 const garminDataDir = path.join(resourcesDir, "data", "garmin");
+const plansDataDir = path.join(resourcesDir, "data", "plans");
 
 const personas = await loadPersonas(resourcesDir);
 const blocklist = await loadBlocklist(resourcesDir);
 const profile = await loadProfile(resourcesDir);
-const tools = createTools(profile, garminDataDir);
+const personaState = { id: null as string | null };
+const tools = createTools(profile, garminDataDir, plansDataDir, personaState);
 
-await startRepl(personas, blocklist, reportsDir, tools);
+await startRepl(personas, blocklist, reportsDir, tools, personaState);
