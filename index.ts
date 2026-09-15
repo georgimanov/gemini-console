@@ -1,9 +1,9 @@
 import * as path from "node:path";
-import { loadPersonas } from "./src/personas/index.js";
-import { loadBlocklist } from "./src/input/index.js";
-import { loadProfile } from "./src/profile.js";
-import { createTools } from "./src/tools/registry.js";
-import { startRepl } from "./src/repl.js";
+import { loadPersonas } from "./src/domain/personas/index.js";
+import { loadBlocklist } from "./src/app/input/index.js";
+import { loadProfile } from "./src/domain/profile/index.js";
+import { createTools } from "./src/domain/tools/registry.js";
+import { startRepl } from "./src/app/repl.js";
 
 const resourcesDir = path.join(import.meta.dirname, "resources");
 const reportsDir = path.join(import.meta.dirname, "reports");

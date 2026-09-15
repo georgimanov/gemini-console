@@ -1,0 +1,30 @@
+{
+  "date": "2026-09-09",
+  "category": "sleep",
+  "metrics": {
+    "sleep_score": {
+      "value": 74,
+      "unit": null
+    },
+    "sleep_duration": {
+      "value": 23658,
+      "unit": "seconds"
+    },
+    "deep_sleep": {
+      "value": 3900,
+      "unit": "seconds"
+    },
+    "light_sleep": {
+      "value": 16380,
+      "unit": "seconds"
+    },
+    "rem_sleep": {
+      "value": 3420,
+      "unit": "seconds"
+    },
+    "awake_time": {
+      "value": 1920,
+      "unit": "seconds"
+    }
+  }
+}

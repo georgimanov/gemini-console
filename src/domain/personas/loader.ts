@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
 import { createFileContextProvider } from "../context/fileContextProvider.js";
-import { textOf } from "../xml.js";
+import { textOf } from "../../shared/xml.js";
 import { buildPersonaContext } from "./render.js";
 import type { Persona } from "./types.js";
 

@@ -1,4 +1,4 @@
-import { readWorkoutsRange } from "../garmin/localStore.js";
+import { readWorkoutsRange } from "../../integrations/garmin/localStore.js";
 import { lastNDates, resolveDaysArg } from "./dateRange.js";
 import type { Tool } from "./types.js";
 

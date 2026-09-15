@@ -1,4 +1,4 @@
-import { textOf } from "../xml.js";
+import { textOf } from "../../shared/xml.js";
 
 /**
  * Canonical persona schema (enforced by buildPersonaContext):

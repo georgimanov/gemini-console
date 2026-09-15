@@ -1,5 +1,5 @@
-import { readMetricsRange } from "../garmin/localStore.js";
-import { syncGarmin } from "../garmin/sync.js";
+import { readMetricsRange } from "../../integrations/garmin/localStore.js";
+import { syncGarmin } from "../../integrations/garmin/sync.js";
 import { lastNDates, resolveDaysArg } from "./dateRange.js";
 import type { Tool } from "./types.js";
 

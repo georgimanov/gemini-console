@@ -1,4 +1,4 @@
-import type { AthleteProfile } from "../profile.js";
+import type { AthleteProfile } from "../profile/index.js";
 import type { Tool } from "./types.js";
 
 interface Coords {

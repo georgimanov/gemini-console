@@ -1,4 +1,4 @@
-import { Defaults } from "../defaults.js";
+import { Defaults } from "../../app/defaults.js";
 
 function isRetryable(error: unknown): boolean {
   const status = (error as { status?: number })?.status;

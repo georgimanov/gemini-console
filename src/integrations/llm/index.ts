@@ -1,5 +1,5 @@
-import { Defaults } from "../defaults.js";
-import type { Tool } from "../tools/types.js";
+import { Defaults } from "../../app/defaults.js";
+import type { Tool } from "../../domain/tools/types.js";
 import type { ChatSession, LlmProvider, ProviderName } from "./types.js";
 import { createGeminiProvider } from "./gemini.js";
 import { createOpenAiProvider } from "./openai.js";

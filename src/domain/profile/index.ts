@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
-import { textOf } from "./xml.js";
+import { textOf } from "../../shared/xml.js";
 
 /** The athlete's profile, used to personalize dynamic context providers (e.g. weather). */
 export interface AthleteProfile {

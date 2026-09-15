@@ -1,4 +1,4 @@
-import type { Tool } from "../tools/types.js";
+import type { Tool } from "../../domain/tools/types.js";
 
 /** One streamed piece of a model's reply. */
 export interface ChatChunk {

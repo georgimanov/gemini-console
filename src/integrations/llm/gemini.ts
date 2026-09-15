@@ -1,6 +1,6 @@
 import { GoogleGenAI, createPartFromFunctionResponse, type Chat, type Part } from "@google/genai";
-import { Defaults } from "../defaults.js";
-import type { Tool } from "../tools/types.js";
+import { Defaults } from "../../app/defaults.js";
+import type { Tool } from "../../domain/tools/types.js";
 import type { ChatSession, LlmProvider } from "./types.js";
 
 /** Gemini provider backed by @google/genai. */

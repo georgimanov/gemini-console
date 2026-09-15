@@ -1,4 +1,4 @@
-import type { AthleteProfile } from "../profile.js";
+import type { AthleteProfile } from "../profile/index.js";
 import type { Tool } from "./types.js";
 
 /** Exposes the athlete's static profile (resources/profile.xml) as a callable tool. */

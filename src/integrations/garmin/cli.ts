@@ -8,7 +8,7 @@ const args = process.argv.slice(2);
 const force = args.includes("--force");
 const days = Number(args.find((a) => !a.startsWith("--"))) || 7;
 
-const dataDir = path.join(import.meta.dirname, "..", "..", "resources", "data", "garmin");
+const dataDir = path.join(import.meta.dirname, "..", "..", "..", "resources", "data", "garmin");
 
 syncGarmin({ days, force, dataDir })
   .then((result) => {

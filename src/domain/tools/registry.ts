@@ -1,4 +1,4 @@
-import type { AthleteProfile } from "../profile.js";
+import type { AthleteProfile } from "../profile/index.js";
 import { createActivitiesTool } from "./activitiesTool.js";
 import { createProfileTool } from "./profileTool.js";
 import { createSleepTool } from "./sleepTool.js";

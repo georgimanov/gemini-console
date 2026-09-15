@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-09",
+  "category": "movement",
+  "metrics": {
+    "steps": {
+      "value": 3651,
+      "unit": "count"
+    }
+  }
+}

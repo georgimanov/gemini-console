@@ -1,4 +1,4 @@
-import type { ProviderName } from "./llm/types.js";
+import type { ProviderName } from "../integrations/llm/types.js";
 
 /** Centralized default values — no other file should hardcode a fallback inline. */
 export class Defaults {
