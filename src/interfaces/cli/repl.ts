@@ -1,42 +1,25 @@
 import * as readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { buildSystemInstruction, type Persona } from "../domain/personas/index.js";
-import { createChatSession, withRetry, activeProviderName, type ChatSession } from "../integrations/llm/index.js";
-import type { PersonaState } from "../domain/tools/registry.js";
-import type { Tool } from "../domain/tools/types.js";
-import { Defaults } from "./defaults.js";
-import { buildUserMessage } from "./userMessage.js";
+import type { Persona } from "../../domain/personas/index.js";
+import { switchPersona, sendMessage, type Session } from "../../core/session.js";
 import { parseInput, type ParseContext } from "./input/index.js";
 import { streamToConsole } from "./output/consoleSink.js";
 import { createReportSink } from "./output/reportSink.js";
 import { createMailSink } from "./output/mailSink.js";
 
-/** Starts the interactive console loop: persona switching, chat streaming, /quit. */
+/** Starts the interactive console loop over an already-created session: persona switching, chat streaming, /quit. */
 export async function startRepl(
+  session: Session,
   personas: Map<string, Persona>,
   blocklist: Set<string>,
-  reportsDir: string,
-  tools: Tool[],
-  personaState: PersonaState
+  reportsDir: string
 ): Promise<void> {
-  if (personas.size === 0) {
-    console.log(
-      "No personas found. Add a persona XML file to resources/personas before starting the console."
-    );
-    throw new Error("No personas available.");
-  }
-
-  const defaultPersona = personas.get(Defaults.PERSONA_ID) ?? personas.values().next().value!;
-  let currentPersona: Persona | null = defaultPersona;
-  personaState.id = defaultPersona.id;
-  let chat: ChatSession = createChatSession(buildSystemInstruction(defaultPersona), tools);
-
   const rl = readline.createInterface({ input: stdin, output: stdout });
   const ctx: ParseContext = { personaIds: new Set(personas.keys()), blocklist };
 
   console.log("AI coach console — type a message, or /quit to exit. Type /help for commands.");
   console.log(`Available personas: ${Array.from(personas.keys()).join(", ")}`);
-  console.log(`Default persona: ${currentPersona.title}`);
+  console.log(`Default persona: ${session.currentPersona!.title}`);
   console.log("Type @persona-name to load a persona.\n");
 
   rl.setPrompt("you> ");
@@ -66,10 +49,8 @@ export async function startRepl(
         continue outer;
 
       case "switchPersona": {
-        currentPersona = personas.get(command.personaId)!;
-        personaState.id = currentPersona.id;
-        console.log(`\n✓ Loaded persona: ${currentPersona.title}\n`);
-        chat = createChatSession(buildSystemInstruction(currentPersona), tools);
+        switchPersona(session, command.personaId);
+        console.log(`\n✓ Loaded persona: ${session.currentPersona!.title}\n`);
         rl.prompt();
         continue outer;
       }
@@ -78,7 +59,6 @@ export async function startRepl(
       case "mail":
       case "message": {
         const text = command.type === "message" ? command.text : command.prompt;
-        const userMessage = buildUserMessage(text, currentPersona);
         const sink =
           command.type === "report"
             ? createReportSink(reportsDir)
@@ -87,12 +67,8 @@ export async function startRepl(
               : streamToConsole;
 
         try {
-          const stream = await withRetry(() => chat.sendMessageStream(userMessage));
-          await sink.handle(stream, {
-            provider: activeProviderName,
-            personaTitle: currentPersona?.title ?? "no persona",
-            personaId: currentPersona?.id ?? null,
-          });
+          const { stream, meta } = await sendMessage(session, text);
+          await sink.handle(stream, meta);
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error);
           console.log(`\n✗ Request failed: ${reason}\n`);

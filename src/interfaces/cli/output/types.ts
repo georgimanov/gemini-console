@@ -1,4 +1,4 @@
-import type { ChatChunk } from "../../integrations/llm/index.js";
+import type { ChatChunk } from "../../../integrations/llm/index.js";
 
 export interface OutputMeta {
   provider: string;

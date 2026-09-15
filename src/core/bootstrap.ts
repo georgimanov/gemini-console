@@ -1,0 +1,32 @@
+import * as path from "node:path";
+import { loadPersonas, type Persona } from "../domain/personas/index.js";
+import { loadProfile } from "../domain/profile/index.js";
+import { createTools } from "../domain/tools/registry.js";
+import type { PersonaState } from "../domain/tools/registry.js";
+import type { Tool } from "../domain/tools/types.js";
+
+export interface CoreContext {
+  resourcesDir: string;
+  reportsDir: string;
+  personas: Map<string, Persona>;
+  /** Builds the tool set for one session, scoped to its own mutable PersonaState. */
+  makeTools: (personaState: PersonaState) => Tool[];
+}
+
+/** Loads personas/profile from resources/ and returns the shared context both interfaces bootstrap from. */
+export async function loadCore(): Promise<CoreContext> {
+  const resourcesDir = path.join(import.meta.dirname, "..", "..", "resources");
+  const reportsDir = path.join(import.meta.dirname, "..", "..", "reports");
+  const garminDataDir = path.join(resourcesDir, "data", "garmin");
+  const plansDataDir = path.join(resourcesDir, "data", "plans");
+
+  const personas = await loadPersonas(resourcesDir);
+  const profile = await loadProfile(resourcesDir);
+
+  return {
+    resourcesDir,
+    reportsDir,
+    personas,
+    makeTools: (personaState) => createTools(profile, garminDataDir, plansDataDir, personaState),
+  };
+}

@@ -1,4 +1,4 @@
-import { Defaults } from "../../app/defaults.js";
+import { Defaults } from "../../core/defaults.js";
 import type { Tool } from "../../domain/tools/types.js";
 import type { ChatSession, LlmProvider, ProviderName } from "./types.js";
 import { createGeminiProvider } from "./gemini.js";

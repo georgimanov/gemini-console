@@ -7,5 +7,10 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["index.ts", "src/integrations/garmin/cli.ts", "src/integrations/mail/cli.ts"]
+  "include": [
+    "src/interfaces/cli/index.ts",
+    "src/interfaces/server/index.ts",
+    "src/integrations/garmin/cli.ts",
+    "src/integrations/mail/cli.ts"
+  ]
 }

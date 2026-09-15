@@ -5,16 +5,19 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.ts",
+  "main": "src/interfaces/cli/index.ts",
   "scripts": {
-    "start": "tsx --env-file=.env index.ts",
-    "dev": "tsx watch --env-file=.env index.ts",
+    "start": "tsx --env-file=.env src/interfaces/cli/index.ts",
+    "dev": "tsx watch --env-file=.env src/interfaces/cli/index.ts",
+    "serve": "tsx --env-file=.env src/interfaces/server/index.ts",
+    "serve:dev": "tsx watch --env-file=.env src/interfaces/server/index.ts",
     "sync:garmin": "tsx --env-file=.env src/integrations/garmin/cli.ts",
     "send:mail": "tsx --env-file=.env src/integrations/mail/cli.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",
+    "fastify": "^5.12.4",
     "garmin-connect": "^1.6.1",
     "nodemailer": "^10.0.10",
     "openai": "^7.15.0",

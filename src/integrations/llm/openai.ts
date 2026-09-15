@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
-import { Defaults } from "../../app/defaults.js";
+import { Defaults } from "../../core/defaults.js";
 import type { Tool } from "../../domain/tools/types.js";
 import type { ChatSession, LlmProvider } from "./types.js";
 

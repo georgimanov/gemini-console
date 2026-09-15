@@ -1,4 +1,4 @@
-import { sendMail } from "../../integrations/mail/send.js";
+import { sendMail } from "../../../integrations/mail/send.js";
 import type { OutputSink } from "./types.js";
 
 /** Buffers the full reply (no token-by-token printing) and emails it as markdown to `to`. */
