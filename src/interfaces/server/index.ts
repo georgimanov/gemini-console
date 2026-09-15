@@ -1,7 +1,12 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Fastify from "fastify";
+import FastifyStatic from "@fastify/static";
 import { loadCore } from "../../core/bootstrap.js";
 import { switchPersona, sendMessage } from "../../core/session.js";
 import { createSessionStore } from "../../core/sessionStore.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const { personas, makeTools } = await loadCore();
 
@@ -12,6 +17,11 @@ if (personas.size === 0) {
 const store = createSessionStore(personas, makeTools);
 
 const app = Fastify({ logger: true });
+
+await app.register(FastifyStatic, {
+  root: path.join(__dirname, "public"),
+  prefix: "/",
+});
 
 app.get("/personas", async () => {
   return Array.from(personas.values()).map((p) => ({ id: p.id, title: p.title }));
