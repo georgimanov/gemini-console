@@ -1,6 +1,12 @@
 import type { Persona } from "../domain/personas/index.js";
 import { buildSystemInstruction } from "../domain/personas/index.js";
-import { createChatSession, withRetry, activeProviderName, type ChatSession } from "../integrations/llm/index.js";
+import {
+  createChatSession,
+  withRetry,
+  activeProviderName,
+  type ChatHistoryTurn,
+  type ChatSession,
+} from "../integrations/llm/index.js";
 import type { PersonaState } from "../domain/tools/registry.js";
 import type { Tool } from "../domain/tools/types.js";
 import { buildUserMessage } from "./userMessage.js";
@@ -14,12 +20,16 @@ export interface Session {
   chat: ChatSession;
 }
 
-/** Creates a session on the given persona (or the map's first persona if omitted). */
+/**
+ * Creates a session on the given persona (or the map's first persona if omitted).
+ * `history` resumes a session with turns saved in an earlier process instead of starting fresh.
+ */
 export function createSession(
   personas: Map<string, Persona>,
   tools: Tool[],
   personaState: PersonaState,
-  personaId?: string
+  personaId?: string,
+  history?: ChatHistoryTurn[]
 ): Session {
   const persona = (personaId ? personas.get(personaId) : undefined) ?? personas.values().next().value!;
   personaState.id = persona.id;
@@ -28,7 +38,7 @@ export function createSession(
     tools,
     personaState,
     currentPersona: persona,
-    chat: createChatSession(buildSystemInstruction(persona), tools),
+    chat: createChatSession(buildSystemInstruction(persona), tools, history),
   };
 }
 

@@ -1,10 +1,13 @@
 import { loadCore } from "../../core/bootstrap.js";
 import { createSessionStore } from "../../core/sessionStore.js";
 import { Defaults } from "../../core/defaults.js";
+import { getPool } from "../../core/db.js";
+import { resolveOwnerUserId } from "../../core/owner.js";
 import { loadBlocklist } from "./input/index.js";
 import { startRepl } from "./repl.js";
 
-const { resourcesDir, reportsDir, personas, makeTools } = await loadCore();
+const ownerUserId = await resolveOwnerUserId(getPool());
+const { resourcesDir, reportsDir, personas, makeTools } = await loadCore(ownerUserId);
 
 if (personas.size === 0) {
   console.log(

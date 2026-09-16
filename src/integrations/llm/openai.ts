@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
 import { Defaults } from "../../core/defaults.js";
 import type { Tool } from "../../domain/tools/types.js";
-import type { ChatSession, LlmProvider } from "./types.js";
+import type { ChatHistoryTurn, ChatSession, LlmProvider } from "./types.js";
 
 /** OpenAI provider backed by the Chat Completions API, with session history kept in-process. */
 export function createOpenAiProvider(
@@ -11,10 +11,17 @@ export function createOpenAiProvider(
   const client = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
 
   return {
-    createChatSession(systemInstruction?: string, tools: Tool[] = []): ChatSession {
+    createChatSession(
+      systemInstruction?: string,
+      tools: Tool[] = [],
+      priorTurns: ChatHistoryTurn[] = []
+    ): ChatSession {
       const history: ChatCompletionMessageParam[] = systemInstruction
         ? [{ role: "system", content: systemInstruction }]
         : [];
+      for (const turn of priorTurns) {
+        history.push({ role: turn.role === "model" ? "assistant" : "user", content: turn.text });
+      }
       const toolsByName = new Map(tools.map((t) => [t.name, t]));
       const toolDefs: ChatCompletionTool[] | undefined =
         tools.length > 0

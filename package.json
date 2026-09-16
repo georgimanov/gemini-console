@@ -9,6 +9,7 @@
   "engines": {
     "node": ">=20.11.0"
   },
+  "workspaces": ["web"],
   "scripts": {
     "start": "tsx --env-file=.env src/interfaces/cli/index.ts",
     "dev": "tsx watch --env-file=.env src/interfaces/cli/index.ts",
@@ -18,13 +19,18 @@
     "sync:garmin": "tsx --env-file=.env src/integrations/garmin/cli.ts",
     "send:mail": "tsx --env-file=.env src/integrations/mail/cli.ts",
     "db:migrate": "tsx --env-file=.env src/core/migrate.ts",
+    "web:dev": "npm run dev --workspace web",
+    "build": "npm run build --workspace web",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.1.2",
     "@fastify/static": "^10.1.3",
     "@google/genai": "^2.18.0",
     "fastify": "^5.12.4",
     "garmin-connect": "^1.6.1",
+    "google-auth-library": "^11.0.2",
+    "jsonwebtoken": "^9.0.3",
     "nodemailer": "^10.0.10",
     "openai": "^7.15.0",
     "pg": "^8.23.0",
@@ -32,6 +38,7 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.23.1",
     "@types/xml2js": "^0.4.14",

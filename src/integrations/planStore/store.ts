@@ -32,6 +32,45 @@ export async function readPlan(userId: string, personaSlug: string, date: string
   };
 }
 
+export interface PlanSummary {
+  personaId: string;
+  personaTitle: string;
+  date: string;
+  latestVersion: number;
+  updatedAt: string;
+}
+
+/** Every plan (persona + date) this user has saved, most recently updated first. */
+export async function listPlanSummaries(userId: string): Promise<PlanSummary[]> {
+  const result = await getPool().query<{
+    slug: string;
+    title: string;
+    date: string;
+    latest_version: number;
+    updated_at: Date;
+  }>(
+    `select per.slug,
+            per.title,
+            to_char(p.date, 'YYYY-MM-DD') as date,
+            max(pv.version) as latest_version,
+            max(pv.saved_at) as updated_at
+     from plans p
+     join personas per on per.id = p.persona_id
+     join plan_versions pv on pv.plan_id = p.id
+     where per.user_id = $1
+     group by per.slug, per.title, p.date
+     order by max(pv.saved_at) desc`,
+    [userId]
+  );
+  return result.rows.map((r) => ({
+    personaId: r.slug,
+    personaTitle: r.title,
+    date: r.date,
+    latestVersion: r.latest_version,
+    updatedAt: r.updated_at.toISOString(),
+  }));
+}
+
 /** The most recently saved version, or null if none exists. */
 export function latestVersion(record: PlanRecord | null): PlanVersion | null {
   if (!record || record.versions.length === 0) return null;

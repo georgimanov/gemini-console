@@ -1,7 +1,7 @@
-import { GoogleGenAI, createPartFromFunctionResponse, type Chat, type Part } from "@google/genai";
+import { GoogleGenAI, createPartFromFunctionResponse, type Chat, type Content, type Part } from "@google/genai";
 import { Defaults } from "../../core/defaults.js";
 import type { Tool } from "../../domain/tools/types.js";
-import type { ChatSession, LlmProvider } from "./types.js";
+import type { ChatHistoryTurn, ChatSession, LlmProvider } from "./types.js";
 
 /** Gemini provider backed by @google/genai. */
 export function createGeminiProvider(
@@ -10,11 +10,12 @@ export function createGeminiProvider(
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   return {
-    createChatSession(systemInstruction?: string, tools: Tool[] = []): ChatSession {
+    createChatSession(systemInstruction?: string, tools: Tool[] = [], history: ChatHistoryTurn[] = []): ChatSession {
       const toolsByName = new Map(tools.map((t) => [t.name, t]));
 
       const chat = ai.chats.create({
         model,
+        history: toGeminiHistory(history),
         config: {
           ...(systemInstruction ? { systemInstruction } : {}),
           ...(tools.length > 0
@@ -38,6 +39,10 @@ export function createGeminiProvider(
       };
     },
   };
+}
+
+function toGeminiHistory(history: ChatHistoryTurn[]): Content[] {
+  return history.map((turn) => ({ role: turn.role, parts: [{ text: turn.text }] }));
 }
 
 /**

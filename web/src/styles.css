@@ -1,0 +1,326 @@
+:root {
+  --color-bg: #faf7f0;
+  --color-surface: #ffffff;
+  --color-border: #e7e0d4;
+  --color-text: #2b2a27;
+  --color-text-muted: #7a766c;
+  --color-blue: #4f7cac;
+  --color-blue-soft: #e8f0f7;
+  --color-green: #5b9279;
+  --color-green-soft: #e9f3ee;
+  --color-grey: #8b8779;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.top-bar__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-3);
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.tab--active {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 500;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn--primary {
+  background: var(--color-blue);
+  border-color: var(--color-blue);
+  color: white;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-text-muted);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-blue-soft);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.select {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+/* ── Login page ─────────────────────────────────────────── */
+
+.login-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.login-page__mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--color-green-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.login-page__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.login-page__subtitle {
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 320px;
+}
+
+/* ── Chat page ──────────────────────────────────────────── */
+
+.chat-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 var(--space-4) var(--space-4);
+  gap: var(--space-3);
+}
+
+.chat-page__controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.chat-page__controls .select {
+  flex: 1;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.bubble {
+  max-width: 85%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bubble--user {
+  align-self: flex-end;
+  background: var(--color-blue);
+  color: white;
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.bubble--model {
+  align-self: flex-start;
+  background: var(--color-green-soft);
+  color: var(--color-text);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.bubble--system {
+  align-self: center;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  padding: var(--space-1) var(--space-3);
+}
+
+.composer {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.composer textarea {
+  flex: 1;
+  resize: none;
+  max-height: 140px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  line-height: 1.4;
+}
+
+.composer textarea:focus,
+.select:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: -1px;
+}
+
+/* ── Plans page ─────────────────────────────────────────── */
+
+.plans-page {
+  flex: 1;
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-y: auto;
+}
+
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: left;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.plan-card__title {
+  font-weight: 600;
+}
+
+.plan-card__meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.plan-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.plan-version {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  white-space: pre-wrap;
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.error-banner {
+  background: #fbeaea;
+  border: 1px solid #e6b8b8;
+  color: #8a3a3a;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.9rem;
+}
