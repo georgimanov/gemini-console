@@ -45,32 +45,46 @@ export async function appendPlanVersion(
   date: string,
   content: string
 ): Promise<PlanVersion> {
-  const pool = getPool();
+  const client = await getPool().connect();
+  try {
+    await client.query("begin");
 
-  const personaResult = await pool.query<{ id: string }>(
-    "select id from personas where user_id = $1 and slug = $2",
-    [userId, personaSlug]
-  );
-  const personaId = personaResult.rows[0]?.id;
-  if (!personaId) {
-    throw new Error(`Unknown persona "${personaSlug}".`);
+    const personaResult = await client.query<{ id: string }>(
+      "select id from personas where user_id = $1 and slug = $2",
+      [userId, personaSlug]
+    );
+    const personaId = personaResult.rows[0]?.id;
+    if (!personaId) {
+      throw new Error(`Unknown persona "${personaSlug}".`);
+    }
+
+    const planResult = await client.query<{ id: string }>(
+      `insert into plans (user_id, persona_id, date)
+       values ($1, $2, $3)
+       on conflict (persona_id, date) do update set persona_id = excluded.persona_id
+       returning id`,
+      [userId, personaId, date]
+    );
+    const planId = planResult.rows[0].id;
+
+    // Locks the plan row so concurrent saves for the same persona/date serialize instead of
+    // racing on the next version number below.
+    await client.query("select id from plans where id = $1 for update", [planId]);
+
+    const versionResult = await client.query<{ version: number; content: string; saved_at: Date }>(
+      `insert into plan_versions (plan_id, version, content)
+       values ($1, (select coalesce(max(version), 0) + 1 from plan_versions where plan_id = $1), $2)
+       returning version, content, saved_at`,
+      [planId, content]
+    );
+    const row = versionResult.rows[0];
+
+    await client.query("commit");
+    return { version: row.version, content: row.content, savedAt: row.saved_at.toISOString() };
+  } catch (err) {
+    await client.query("rollback");
+    throw err;
+  } finally {
+    client.release();
   }
-
-  const planResult = await pool.query<{ id: string }>(
-    `insert into plans (user_id, persona_id, date)
-     values ($1, $2, $3)
-     on conflict (persona_id, date) do update set persona_id = excluded.persona_id
-     returning id`,
-    [userId, personaId, date]
-  );
-  const planId = planResult.rows[0].id;
-
-  const versionResult = await pool.query<{ version: number; content: string; saved_at: Date }>(
-    `insert into plan_versions (plan_id, version, content)
-     values ($1, (select coalesce(max(version), 0) + 1 from plan_versions where plan_id = $1), $2)
-     returning version, content, saved_at`,
-    [planId, content]
-  );
-  const row = versionResult.rows[0];
-  return { version: row.version, content: row.content, savedAt: row.saved_at.toISOString() };
 }

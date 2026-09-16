@@ -26,13 +26,11 @@ async function loadDbReferencedContext(
   documentPaths: string[],
   resourcesDir: string
 ): Promise<string> {
-  const sections: string[] = [];
-  for (const docPath of documentPaths) {
-    const content = await resolveDocument(userId, docPath, resourcesDir);
-    if (content !== null && content.trim()) {
-      sections.push(`--- ${docPath} ---\n${content.trim()}`);
-    }
-  }
+  const contents = await Promise.all(documentPaths.map((docPath) => resolveDocument(userId, docPath, resourcesDir)));
+  const sections = documentPaths
+    .map((docPath, i) => [docPath, contents[i]] as const)
+    .filter((entry): entry is [string, string] => entry[1] !== null && entry[1].trim() !== "")
+    .map(([docPath, content]) => `--- ${docPath} ---\n${content.trim()}`);
   return sections.join("\n\n");
 }
 

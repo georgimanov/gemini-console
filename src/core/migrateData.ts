@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { parseStringPromise } from "xml2js";
 import { getPool } from "./db.js";
 import { OWNER_EMAIL } from "./owner.js";
+import { textOf } from "../shared/xml.js";
 import { TEMPLATE_SLUG_BY_FILENAME } from "../domain/context/templateSlugs.js";
 import type { MetricCategoryRecord, WorkoutsRecord } from "../integrations/garmin/types.js";
 import type { PlanRecord } from "../integrations/planStore/types.js";
@@ -18,8 +19,7 @@ async function readProfileXml(resourcesDir: string): Promise<{ location: string 
     return { location: "" };
   }
   const parsed = await parseStringPromise(content);
-  const location = parsed.profile?.location?.[0];
-  return { location: typeof location === "string" ? location : location?._ ?? "" };
+  return { location: textOf(parsed.profile?.location?.[0]) };
 }
 
 /**
@@ -109,14 +109,8 @@ async function migratePersonas(
     const persona = parsed.persona;
     const slug: string = persona.$.id;
     const title: string = persona.$.title;
-    const mission: string | null = persona.mission?.[0]
-      ? typeof persona.mission[0] === "string"
-        ? persona.mission[0]
-        : persona.mission[0]._ ?? null
-      : null;
-    const referencedDocuments: string[] = (persona.referencedDocuments?.[0]?.document ?? []).map((d: any) =>
-      typeof d === "string" ? d : d._ ?? ""
-    );
+    const mission: string | null = persona.mission?.[0] ? textOf(persona.mission[0]) || null : null;
+    const referencedDocuments: string[] = (persona.referencedDocuments?.[0]?.document ?? []).map(textOf);
 
     const { $: _attrs, referencedDocuments: _refs, ...definition } = persona;
 

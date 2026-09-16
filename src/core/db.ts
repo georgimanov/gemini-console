@@ -7,7 +7,11 @@ import { Pool, type PoolConfig } from "pg";
  */
 function parseConnectionString(raw: string): PoolConfig {
   if (raw.startsWith("postgres://") || raw.startsWith("postgresql://")) {
-    return { connectionString: raw, ssl: { rejectUnauthorized: false } };
+    const sslMode = new URL(raw).searchParams.get("sslmode")?.toLowerCase();
+    return {
+      connectionString: raw,
+      ssl: sslMode === "disable" ? false : { rejectUnauthorized: false },
+    };
   }
 
   const fields = new Map<string, string>();

@@ -22,16 +22,18 @@ export async function loadPersonas(userId: string, resourcesDir: string): Promis
     [userId]
   );
 
-  for (const row of result.rows) {
-    const context = buildPersonaContext(row.definition, row.title);
-    const provider = createDbContextProvider(userId, row.referenced_documents, resourcesDir);
-    const referencedContext = await provider.load();
-    const fullContext = referencedContext
-      ? `${context}\n\nReference Data:\n${referencedContext}`
-      : context;
+  await Promise.all(
+    result.rows.map(async (row) => {
+      const context = buildPersonaContext(row.definition, row.title);
+      const provider = createDbContextProvider(userId, row.referenced_documents, resourcesDir);
+      const referencedContext = await provider.load();
+      const fullContext = referencedContext
+        ? `${context}\n\nReference Data:\n${referencedContext}`
+        : context;
 
-    personas.set(row.slug, { id: row.slug, title: row.title, context: fullContext });
-  }
+      personas.set(row.slug, { id: row.slug, title: row.title, context: fullContext });
+    })
+  );
 
   return personas;
 }
