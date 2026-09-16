@@ -22,7 +22,7 @@ export async function loadCore(): Promise<CoreContext> {
 
   const userId = await resolveOwnerUserId(getPool());
 
-  const personas = await loadPersonas(userId, resourcesDir);
+  const personas = await loadPersonas(userId);
   const profile = await loadProfile(userId);
 
   return {

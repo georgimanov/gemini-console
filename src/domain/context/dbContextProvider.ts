@@ -1,32 +1,22 @@
 import { getPool } from "../../core/db.js";
 import { TEMPLATE_SLUG_BY_FILENAME } from "./templateSlugs.js";
-import { readResourceFile } from "./fileContextProvider.js";
 import { buildPersonaContext } from "../personas/render.js";
 import type { ContextProvider } from "./types.js";
 
 /**
- * Resolves a persona's <referencedDocuments> entries into their content, now that most of
- * what they used to point at (weight, food list, supplements, templates, other personas)
- * lives in Postgres rather than resources/. Anything not recognized here (e.g.
- * data/atlas-sprint-log.xml, which stayed file-based) falls back to reading the file.
+ * Resolves a persona's <referencedDocuments> entries into their content, all of which now
+ * lives in Postgres (weight, food list, supplements, templates, other personas) rather than
+ * resources/.
  */
-export function createDbContextProvider(
-  userId: string,
-  documentPaths: string[],
-  resourcesDir: string
-): ContextProvider {
+export function createDbContextProvider(userId: string, documentPaths: string[]): ContextProvider {
   return {
     id: "referencedDocuments",
-    load: () => loadDbReferencedContext(userId, documentPaths, resourcesDir),
+    load: () => loadDbReferencedContext(userId, documentPaths),
   };
 }
 
-async function loadDbReferencedContext(
-  userId: string,
-  documentPaths: string[],
-  resourcesDir: string
-): Promise<string> {
-  const contents = await Promise.all(documentPaths.map((docPath) => resolveDocument(userId, docPath, resourcesDir)));
+async function loadDbReferencedContext(userId: string, documentPaths: string[]): Promise<string> {
+  const contents = await Promise.all(documentPaths.map((docPath) => resolveDocument(userId, docPath)));
   const sections = documentPaths
     .map((docPath, i) => [docPath, contents[i]] as const)
     .filter((entry): entry is [string, string] => entry[1] !== null && entry[1].trim() !== "")
@@ -34,7 +24,7 @@ async function loadDbReferencedContext(
   return sections.join("\n\n");
 }
 
-async function resolveDocument(userId: string, docPath: string, resourcesDir: string): Promise<string | null> {
+async function resolveDocument(userId: string, docPath: string): Promise<string | null> {
   if (docPath === "data/weight.csv") return formatWeightHistory(userId);
   if (docPath === "data/food-list.xml") return formatFoodList(userId);
   if (docPath === "data/supplements-and-vitamins.xml") return formatSupplements(userId);
@@ -45,8 +35,7 @@ async function resolveDocument(userId: string, docPath: string, resourcesDir: st
   const personaMatch = docPath.match(/^personas\/(.+)\.xml$/);
   if (personaMatch) return fetchPersonaContext(userId, personaMatch[1]);
 
-  // Not a DB-backed resource (e.g. data/atlas-sprint-log.xml) — fall back to the file.
-  return readResourceFile(resourcesDir, docPath);
+  return null;
 }
 
 async function formatWeightHistory(userId: string): Promise<string | null> {

@@ -18,7 +18,6 @@
     "sync:garmin": "tsx --env-file=.env src/integrations/garmin/cli.ts",
     "send:mail": "tsx --env-file=.env src/integrations/mail/cli.ts",
     "db:migrate": "tsx --env-file=.env src/core/migrate.ts",
-    "db:migrate-data": "tsx --env-file=.env src/core/migrateData.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

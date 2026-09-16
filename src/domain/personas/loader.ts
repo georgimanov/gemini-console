@@ -5,11 +5,10 @@ import type { Persona } from "./types.js";
 
 /**
  * Loads every persona row for this user into a map keyed by persona id (slug), merging in
- * the content of each persona's referenced_documents (resolved via dbContextProvider,
- * which reads most of them from Postgres now — see migrateData.ts) so the model has the
- * actual data, not just filenames.
+ * the content of each persona's referenced_documents (resolved via dbContextProvider, which
+ * reads them from Postgres) so the model has the actual data, not just filenames.
  */
-export async function loadPersonas(userId: string, resourcesDir: string): Promise<Map<string, Persona>> {
+export async function loadPersonas(userId: string): Promise<Map<string, Persona>> {
   const personas = new Map<string, Persona>();
 
   const result = await getPool().query<{
@@ -25,7 +24,7 @@ export async function loadPersonas(userId: string, resourcesDir: string): Promis
   await Promise.all(
     result.rows.map(async (row) => {
       const context = buildPersonaContext(row.definition, row.title);
-      const provider = createDbContextProvider(userId, row.referenced_documents, resourcesDir);
+      const provider = createDbContextProvider(userId, row.referenced_documents);
       const referencedContext = await provider.load();
       const fullContext = referencedContext
         ? `${context}\n\nReference Data:\n${referencedContext}`

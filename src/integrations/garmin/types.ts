@@ -28,14 +28,14 @@ export interface ActivityRow {
   raw: unknown;
 }
 
-/** One category's scalar metrics for one date, stored as resources/data/garmin/{category}_{date}.json. */
+/** One category's scalar metrics for one date, stored in garmin_metrics. */
 export interface MetricCategoryRecord {
   date: string;
   category: string;
   metrics: Record<string, { value: number; unit: string | null }>;
 }
 
-/** The "workouts" category for one date, stored as resources/data/garmin/workouts_{date}.json. */
+/** The "workouts" category for one date, stored in garmin_activities. */
 export interface WorkoutsRecord {
   date: string;
   category: "workouts";
