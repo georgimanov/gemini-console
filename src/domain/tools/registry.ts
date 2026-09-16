@@ -19,19 +19,14 @@ export type { PersonaState };
  * the system instruction up front. `persona` is a mutable holder the caller updates on
  * persona switch, so the plan-store tools scope to whichever persona is currently active.
  */
-export function createTools(
-  profile: AthleteProfile,
-  garminDataDir: string,
-  plansDataDir: string,
-  persona: PersonaState
-): Tool[] {
+export function createTools(profile: AthleteProfile, userId: string, persona: PersonaState): Tool[] {
   return [
-    createSleepTool(garminDataDir),
-    createActivitiesTool(garminDataDir),
+    createSleepTool(userId),
+    createActivitiesTool(userId),
     createWeatherTool(profile),
     createProfileTool(profile),
-    createGetSavedPlanTool(plansDataDir, persona),
-    createSavePlanTool(plansDataDir, persona),
-    createUpdatePlanTool(plansDataDir, persona),
+    createGetSavedPlanTool(userId, persona),
+    createSavePlanTool(userId, persona),
+    createUpdatePlanTool(userId, persona),
   ];
 }

@@ -11,7 +11,7 @@ function km(meters: number | null): string {
 }
 
 /** Exposes synced Garmin activities (runs, rides, ...) as a callable tool. */
-export function createActivitiesTool(dataDir: string): Tool {
+export function createActivitiesTool(userId: string): Tool {
   return {
     name: "get_activities",
     description:
@@ -29,7 +29,7 @@ export function createActivitiesTool(dataDir: string): Tool {
     },
     async execute(args) {
       const dates = lastNDates(resolveDaysArg(args)).sort();
-      const records = await readWorkoutsRange(dataDir, dates);
+      const records = await readWorkoutsRange(userId, dates);
       const activities = records.flatMap((r) => Object.values(r.activities));
       if (activities.length === 0) return "No activities have been synced for the requested period.";
 

@@ -17,6 +17,8 @@
     "serve:prod": "tsx src/interfaces/server/index.ts",
     "sync:garmin": "tsx --env-file=.env src/integrations/garmin/cli.ts",
     "send:mail": "tsx --env-file=.env src/integrations/mail/cli.ts",
+    "db:migrate": "tsx --env-file=.env src/core/migrate.ts",
+    "db:migrate-data": "tsx --env-file=.env src/core/migrateData.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -26,11 +28,13 @@
     "garmin-connect": "^1.6.1",
     "nodemailer": "^10.0.10",
     "openai": "^7.15.0",
+    "pg": "^8.23.0",
     "tsx": "^4.23.12",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.23.1",
     "@types/xml2js": "^0.4.14",
     "typescript": "^7.0.2"
   }

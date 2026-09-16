@@ -11,7 +11,7 @@ function today(): string {
 }
 
 /** Exposes previously saved plans (see createSavePlanTool/createUpdatePlanTool) as a callable tool. */
-export function createGetSavedPlanTool(dataDir: string, persona: PersonaState): Tool {
+export function createGetSavedPlanTool(userId: string, persona: PersonaState): Tool {
   return {
     name: "get_saved_plan",
     description:
@@ -34,7 +34,7 @@ export function createGetSavedPlanTool(dataDir: string, persona: PersonaState): 
     async execute(args) {
       if (!persona.id) return "No persona is active.";
       const date = typeof args.date === "string" && args.date ? args.date : today();
-      const record = await readPlan(dataDir, persona.id, date);
+      const record = await readPlan(userId, persona.id, date);
       if (!record || record.versions.length === 0) return `No plan has been saved for ${date}.`;
 
       const requested = typeof args.version === "number" ? args.version : null;
@@ -47,7 +47,7 @@ export function createGetSavedPlanTool(dataDir: string, persona: PersonaState): 
 }
 
 /** Exposes plan persistence (see createGetSavedPlanTool) as a callable tool. Use for the first save of the day. */
-export function createSavePlanTool(dataDir: string, persona: PersonaState): Tool {
+export function createSavePlanTool(userId: string, persona: PersonaState): Tool {
   return {
     name: "save_plan",
     description:
@@ -68,14 +68,14 @@ export function createSavePlanTool(dataDir: string, persona: PersonaState): Tool
       const content = typeof args.content === "string" ? args.content : "";
       if (!content.trim()) return "Nothing to save: content was empty.";
       const date = typeof args.date === "string" && args.date ? args.date : today();
-      const version = await appendPlanVersion(dataDir, persona.id, date, content);
+      const version = await appendPlanVersion(userId, persona.id, date, content);
       return `Saved plan for ${date} as v${version.version}.`;
     },
   };
 }
 
 /** Saves an edited plan as a new version, preserving earlier versions (see createGetSavedPlanTool). */
-export function createUpdatePlanTool(dataDir: string, persona: PersonaState): Tool {
+export function createUpdatePlanTool(userId: string, persona: PersonaState): Tool {
   return {
     name: "update_plan",
     description:
@@ -99,7 +99,7 @@ export function createUpdatePlanTool(dataDir: string, persona: PersonaState): To
       const content = typeof args.content === "string" ? args.content : "";
       if (!content.trim()) return "Nothing to save: content was empty.";
       const date = typeof args.date === "string" && args.date ? args.date : today();
-      const version = await appendPlanVersion(dataDir, persona.id, date, content);
+      const version = await appendPlanVersion(userId, persona.id, date, content);
       return `Saved edited plan for ${date} as v${version.version}.`;
     },
   };

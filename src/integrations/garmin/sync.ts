@@ -1,6 +1,5 @@
-// Garmin sync: log in, pull the last N days, write to resources/data/garmin/*.json.
-// Ported from the ai-coach-app Postgres sync (see its docs/adr/0007) with the
-// DB upserts swapped for local JSON files — see localStore.ts.
+// Garmin sync: log in, pull the last N days, upsert into garmin_metrics/garmin_activities
+// (Postgres) — see localStore.ts.
 // garmin-connect is CJS with a getter-based named export, which Node's ESM
 // interop can't statically detect — import the default and destructure instead.
 import garminConnectPkg from "garmin-connect";
@@ -100,11 +99,11 @@ async function tryGet<T>(
 export interface SyncOptions {
   days?: number;
   force?: boolean;
-  /** Directory to write resources/data/garmin/YYYY-MM-DD.json files into. */
-  dataDir: string;
+  /** Owner user to upsert garmin_metrics/garmin_activities rows for. */
+  userId: string;
 }
 
-export async function syncGarmin({ days = 7, force = false, dataDir }: SyncOptions): Promise<SyncResult> {
+export async function syncGarmin({ days = 7, force = false, userId }: SyncOptions): Promise<SyncResult> {
   const username = process.env.GARMIN_USERNAME;
   const password = process.env.GARMIN_PASSWORD;
   if (!username || !password) {
@@ -116,7 +115,7 @@ export async function syncGarmin({ days = 7, force = false, dataDir }: SyncOptio
   // Skip the whole sync (no Garmin login, no rate-limit risk) when today's sleep is
   // already stored. A manual re-sync passes force=true to bypass this.
   const today = ymd(new Date());
-  if (!force && (await hasSleepData(dataDir, today))) {
+  if (!force && (await hasSleepData(userId, today))) {
     return {
       days,
       syncedDates: [],
@@ -155,7 +154,7 @@ export async function syncGarmin({ days = 7, force = false, dataDir }: SyncOptio
     );
     if (steps !== undefined) rows.push(...parseSteps(steps, dateStr));
 
-    metricRowsWritten += await upsertMetrics(dataDir, rows);
+    metricRowsWritten += await upsertMetrics(userId, rows);
     if (rows.length > 0) syncedDates.push(dateStr);
   }
 
@@ -170,7 +169,7 @@ export async function syncGarmin({ days = 7, force = false, dataDir }: SyncOptio
     for (const item of list) {
       const row = parseActivity(item);
       if (!row || !windowDates.has(row.date)) continue;
-      await upsertActivity(dataDir, row);
+      await upsertActivity(userId, row);
       activitiesWritten += 1;
     }
   }

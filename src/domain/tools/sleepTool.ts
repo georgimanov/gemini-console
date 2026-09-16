@@ -10,7 +10,7 @@ function hms(seconds: number): string {
 }
 
 /** Exposes synced Garmin sleep + overnight recovery metrics (score, stages, HRV, resting HR) as a callable tool. */
-export function createSleepTool(dataDir: string): Tool {
+export function createSleepTool(userId: string): Tool {
   return {
     name: "get_sleep_data",
     description:
@@ -34,14 +34,14 @@ export function createSleepTool(dataDir: string): Tool {
       // already stored, so this is cheap except on the one call per day that needs it.
       let syncWarning: string | null = null;
       try {
-        await syncGarmin({ days, dataDir });
+        await syncGarmin({ days, userId });
       } catch (error) {
         syncWarning = error instanceof Error ? error.message : String(error);
       }
 
       const [sleep, recovery] = await Promise.all([
-        readMetricsRange(dataDir, "sleep", dates),
-        readMetricsRange(dataDir, "recovery", dates),
+        readMetricsRange(userId, "sleep", dates),
+        readMetricsRange(userId, "recovery", dates),
       ]);
 
       const recoveryByDate = new Map(recovery.map((r) => [r.date, r.metrics]));

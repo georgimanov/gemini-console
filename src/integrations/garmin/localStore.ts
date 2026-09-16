@@ -1,94 +1,159 @@
-// JSON-per-category-per-day local storage for Garmin data:
-// resources/data/garmin/{category}_{date}.json (category from categories.ts,
-// e.g. sleep_2026-09-15.json, recovery_2026-09-15.json, workouts_2026-09-15.json).
-// Stands in for the Postgres tables in the ai-coach-app sync until this data
-// needs to be queried/joined rather than just read by a persona.
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import { categoryOf, type Category } from "./categories.js";
+// Postgres-backed storage for Garmin data: garmin_metrics (sleep/recovery/body/movement,
+// one row per date+metric) and garmin_activities (workouts), both scoped by user_id.
+import { getPool } from "../../core/db.js";
+import { categoryOf } from "./categories.js";
 import type { ActivityRow, MetricCategoryRecord, MetricRow, WorkoutsRecord } from "./types.js";
 
-function filePath(dataDir: string, category: Category, date: string): string {
-  return path.join(dataDir, `${category}_${date}.json`);
-}
+/** Merges metric rows into garmin_metrics (overwriting same date+metric values). */
+export async function upsertMetrics(userId: string, rows: MetricRow[]): Promise<number> {
+  const pool = getPool();
+  let written = 0;
 
-async function readJson<T>(file: string): Promise<T | undefined> {
-  try {
-    return JSON.parse(await fs.readFile(file, "utf-8")) as T;
-  } catch {
-    return undefined;
-  }
-}
-
-async function writeJson(dataDir: string, file: string, data: unknown): Promise<void> {
-  await fs.mkdir(dataDir, { recursive: true });
-  await fs.writeFile(file, JSON.stringify(data, null, 2) + "\n", "utf-8");
-}
-
-async function readMetricCategory(
-  dataDir: string,
-  category: Category,
-  date: string
-): Promise<MetricCategoryRecord> {
-  const file = filePath(dataDir, category, date);
-  return (await readJson<MetricCategoryRecord>(file)) ?? { date, category, metrics: {} };
-}
-
-async function readWorkouts(dataDir: string, date: string): Promise<WorkoutsRecord> {
-  const file = filePath(dataDir, "workouts", date);
-  return (await readJson<WorkoutsRecord>(file)) ?? { date, category: "workouts", activities: {} };
-}
-
-/** Merges metric rows into their {category}_{date}.json file (overwriting same-metric values). */
-export async function upsertMetrics(dataDir: string, rows: MetricRow[]): Promise<number> {
-  // Group by (date, category) since each metric belongs to exactly one category file.
-  const byFile = new Map<string, { date: string; category: Category; rows: MetricRow[] }>();
   for (const row of rows) {
     const category = categoryOf(row.metric);
     if (!category) continue; // unpromoted metric with no category — skip rather than guess
-    const key = `${category}_${row.date}`;
-    const entry = byFile.get(key) ?? { date: row.date, category, rows: [] };
-    entry.rows.push(row);
-    byFile.set(key, entry);
+
+    await pool.query(
+      `insert into garmin_metrics (user_id, date, category, metric, value, unit)
+       values ($1, $2, $3, $4, $5, $6)
+       on conflict (user_id, date, metric) do update set
+         value = excluded.value, unit = excluded.unit, category = excluded.category`,
+      [userId, row.date, category, row.metric, row.value, row.unit]
+    );
+    written += 1;
   }
 
-  let written = 0;
-  for (const { date, category, rows: fileRows } of byFile.values()) {
-    const record = await readMetricCategory(dataDir, category, date);
-    for (const row of fileRows) {
-      record.metrics[row.metric] = { value: row.value, unit: row.unit };
-      written += 1;
-    }
-    await writeJson(dataDir, filePath(dataDir, category, date), record);
-  }
   return written;
 }
 
-/** Merges one activity into workouts_{date}.json, keyed by activityId (overwrite on re-sync). */
-export async function upsertActivity(dataDir: string, row: ActivityRow): Promise<void> {
-  const record = await readWorkouts(dataDir, row.date);
-  record.activities[String(row.activityId)] = row;
-  await writeJson(dataDir, filePath(dataDir, "workouts", row.date), record);
+/** Upserts one activity into garmin_activities, keyed by activityId (overwrite on re-sync). */
+export async function upsertActivity(userId: string, row: ActivityRow): Promise<void> {
+  await getPool().query(
+    `insert into garmin_activities (
+       user_id, activity_id, date, start_time, activity_type, activity_name,
+       duration_seconds, distance_m, calories, average_hr, max_hr,
+       aerobic_training_effect, anaerobic_training_effect, training_effect_label,
+       activity_training_load, moderate_intensity_minutes, vigorous_intensity_minutes,
+       vo2_max, raw
+     ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+     on conflict (user_id, activity_id) do update set
+       date = excluded.date,
+       start_time = excluded.start_time,
+       activity_type = excluded.activity_type,
+       activity_name = excluded.activity_name,
+       duration_seconds = excluded.duration_seconds,
+       distance_m = excluded.distance_m,
+       calories = excluded.calories,
+       average_hr = excluded.average_hr,
+       max_hr = excluded.max_hr,
+       aerobic_training_effect = excluded.aerobic_training_effect,
+       anaerobic_training_effect = excluded.anaerobic_training_effect,
+       training_effect_label = excluded.training_effect_label,
+       activity_training_load = excluded.activity_training_load,
+       moderate_intensity_minutes = excluded.moderate_intensity_minutes,
+       vigorous_intensity_minutes = excluded.vigorous_intensity_minutes,
+       vo2_max = excluded.vo2_max,
+       raw = excluded.raw`,
+    [
+      userId,
+      row.activityId,
+      row.date,
+      row.startTime,
+      row.activityType,
+      row.activityName,
+      row.durationSeconds,
+      row.distanceM,
+      row.calories,
+      row.averageHr,
+      row.maxHr,
+      row.aerobicTrainingEffect,
+      row.anaerobicTrainingEffect,
+      row.trainingEffectLabel,
+      row.activityTrainingLoad,
+      row.moderateIntensityMinutes,
+      row.vigorousIntensityMinutes,
+      row.vo2Max,
+      JSON.stringify(row.raw),
+    ]
+  );
 }
 
-/** True when sleep_{date}.json already has a sleep_duration entry (i.e. that day was synced). */
-export async function hasSleepData(dataDir: string, date: string): Promise<boolean> {
-  const record = await readMetricCategory(dataDir, "sleep", date);
-  return record.metrics.sleep_duration !== undefined;
+/** True when this date already has a sleep_duration row (i.e. that day was synced). */
+export async function hasSleepData(userId: string, date: string): Promise<boolean> {
+  const result = await getPool().query(
+    "select 1 from garmin_metrics where user_id = $1 and date = $2 and metric = 'sleep_duration' limit 1",
+    [userId, date]
+  );
+  return result.rows.length > 0;
 }
 
 /** Reads one category's records across a set of dates, dropping days with no data. */
 export async function readMetricsRange(
-  dataDir: string,
-  category: Category,
+  userId: string,
+  category: string,
   dates: string[]
 ): Promise<MetricCategoryRecord[]> {
-  const records = await Promise.all(dates.map((date) => readMetricCategory(dataDir, category, date)));
-  return records.filter((record) => Object.keys(record.metrics).length > 0);
+  if (dates.length === 0) return [];
+
+  const result = await getPool().query<{ date: string; metric: string; value: string; unit: string | null }>(
+    `select date::text as date, metric, value, unit
+     from garmin_metrics
+     where user_id = $1 and category = $2 and date = any($3::date[])`,
+    [userId, category, dates]
+  );
+
+  const byDate = new Map<string, MetricCategoryRecord>();
+  for (const row of result.rows) {
+    const record = byDate.get(row.date) ?? { date: row.date, category, metrics: {} };
+    record.metrics[row.metric] = { value: Number(row.value), unit: row.unit };
+    byDate.set(row.date, record);
+  }
+  return Array.from(byDate.values());
 }
 
 /** Reads workouts across a set of dates, dropping days with no activities. */
-export async function readWorkoutsRange(dataDir: string, dates: string[]): Promise<WorkoutsRecord[]> {
-  const records = await Promise.all(dates.map((date) => readWorkouts(dataDir, date)));
-  return records.filter((record) => Object.keys(record.activities).length > 0);
+export async function readWorkoutsRange(userId: string, dates: string[]): Promise<WorkoutsRecord[]> {
+  if (dates.length === 0) return [];
+
+  const result = await getPool().query(
+    `select activity_id, date::text as date, start_time, activity_type, activity_name,
+            duration_seconds, distance_m, calories, average_hr, max_hr,
+            aerobic_training_effect, anaerobic_training_effect, training_effect_label,
+            activity_training_load, moderate_intensity_minutes, vigorous_intensity_minutes,
+            vo2_max, raw
+     from garmin_activities
+     where user_id = $1 and date = any($2::date[])`,
+    [userId, dates]
+  );
+
+  const byDate = new Map<string, WorkoutsRecord>();
+  for (const r of result.rows) {
+    const record: WorkoutsRecord =
+      byDate.get(r.date) ?? { date: r.date, category: "workouts", activities: {} };
+    const activity: ActivityRow = {
+      activityId: Number(r.activity_id),
+      date: r.date,
+      startTime: r.start_time instanceof Date ? r.start_time.toISOString() : r.start_time,
+      activityType: r.activity_type,
+      activityName: r.activity_name,
+      durationSeconds: r.duration_seconds === null ? null : Number(r.duration_seconds),
+      distanceM: r.distance_m === null ? null : Number(r.distance_m),
+      calories: r.calories === null ? null : Number(r.calories),
+      averageHr: r.average_hr === null ? null : Number(r.average_hr),
+      maxHr: r.max_hr === null ? null : Number(r.max_hr),
+      aerobicTrainingEffect: r.aerobic_training_effect === null ? null : Number(r.aerobic_training_effect),
+      anaerobicTrainingEffect: r.anaerobic_training_effect === null ? null : Number(r.anaerobic_training_effect),
+      trainingEffectLabel: r.training_effect_label,
+      activityTrainingLoad: r.activity_training_load === null ? null : Number(r.activity_training_load),
+      moderateIntensityMinutes:
+        r.moderate_intensity_minutes === null ? null : Number(r.moderate_intensity_minutes),
+      vigorousIntensityMinutes:
+        r.vigorous_intensity_minutes === null ? null : Number(r.vigorous_intensity_minutes),
+      vo2Max: r.vo2_max === null ? null : Number(r.vo2_max),
+      raw: r.raw,
+    };
+    record.activities[String(activity.activityId)] = activity;
+    byDate.set(r.date, record);
+  }
+  return Array.from(byDate.values());
 }

@@ -1,61 +1,36 @@
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import { parseStringPromise } from "xml2js";
-import { createFileContextProvider } from "../context/fileContextProvider.js";
-import { textOf } from "../../shared/xml.js";
+import { getPool } from "../../core/db.js";
+import { createDbContextProvider } from "../context/dbContextProvider.js";
 import { buildPersonaContext } from "./render.js";
 import type { Persona } from "./types.js";
 
 /**
- * Loads every persona XML file in resources/personas into a map keyed by persona id,
- * merging in the content of each persona's <referencedDocuments> (resolved relative
- * to resourcesDir, may point at other files under resources/ including other personas)
- * so the model has the actual data, not just filenames.
+ * Loads every persona row for this user into a map keyed by persona id (slug), merging in
+ * the content of each persona's referenced_documents (resolved via dbContextProvider,
+ * which reads most of them from Postgres now — see migrateData.ts) so the model has the
+ * actual data, not just filenames.
  */
-export async function loadPersonas(resourcesDir: string): Promise<Map<string, Persona>> {
+export async function loadPersonas(userId: string, resourcesDir: string): Promise<Map<string, Persona>> {
   const personas = new Map<string, Persona>();
-  const personasDir = path.join(resourcesDir, "personas");
 
-  const files = await fs.readdir(personasDir);
-  for (const file of files) {
-    if (!file.endsWith(".xml")) continue;
+  const result = await getPool().query<{
+    slug: string;
+    title: string;
+    definition: unknown;
+    referenced_documents: string[];
+  }>(
+    "select slug, title, definition, referenced_documents from personas where user_id = $1 and is_active",
+    [userId]
+  );
 
-    const filePath = path.join(personasDir, file);
-    const content = await fs.readFile(filePath, "utf-8");
-    const parsed = await parseStringPromise(content);
-
-    const persona = parsed.persona;
-    const id: string | undefined = persona?.$?.id;
-    const title: string | undefined = persona?.$?.title;
-    const expectedId = path.basename(file, ".xml");
-
-    if (!id) {
-      throw new Error(
-        `Persona file "${file}" is missing a required "id" attribute on <persona>.`
-      );
-    }
-    if (!title) {
-      throw new Error(
-        `Persona file "${file}" is missing a required "title" attribute on <persona>.`
-      );
-    }
-    if (id !== expectedId) {
-      throw new Error(
-        `Persona id "${id}" in "${file}" must match its filename ("${expectedId}").`
-      );
-    }
-
-    const context = buildPersonaContext(persona, title);
-    const referencedDocs: string[] = (persona.referencedDocuments?.[0]?.document ?? []).map(
-      textOf
-    );
-    const fileProvider = createFileContextProvider(referencedDocs, resourcesDir);
-    const referencedContext = await fileProvider.load();
+  for (const row of result.rows) {
+    const context = buildPersonaContext(row.definition, row.title);
+    const provider = createDbContextProvider(userId, row.referenced_documents, resourcesDir);
+    const referencedContext = await provider.load();
     const fullContext = referencedContext
       ? `${context}\n\nReference Data:\n${referencedContext}`
       : context;
 
-    personas.set(id, { id, title, context: fullContext });
+    personas.set(row.slug, { id: row.slug, title: row.title, context: fullContext });
   }
 
   return personas;
